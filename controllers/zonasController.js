@@ -1,4 +1,4 @@
-// controllers/clienteController.js
+// controllers/zonasController.js
 const zonasService = require('../services/zonasService');
 
 class ZonasController {
@@ -11,11 +11,11 @@ class ZonasController {
         }
     }
 
-    async getZonasById(req, res) {
+    async getZonaById(req, res) {
         try {
-            const zonas = await zonasService.getZonaById(req.params.id);
-            if (zonas) {
-                res.json(zonas);
+            const zona = await zonasService.getZonaById(req.params.id);
+            if (zona) {
+                res.json(zona);
             } else {
                 res.status(404).json({ message: 'Zona no encontrada' });
             }
@@ -50,7 +50,7 @@ class ZonasController {
         try {
             const deleted = await zonasService.deleteZona(req.params.id);
             if (deleted) {
-                res.status(204).send(); // No Content
+                res.status(204).send();
             } else {
                 res.status(404).json({ message: 'Zona no encontrada' });
             }
