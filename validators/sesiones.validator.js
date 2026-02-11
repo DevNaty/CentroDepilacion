@@ -1,24 +1,42 @@
+// validators/sesiones.validator.js
 function validarCrearSesion(body) {
   const errores = [];
 
   const { ID_Cliente, Fecha, Zonas } = body;
 
-  if (!ID_Cliente || !Number.isInteger(ID_Cliente)) {
+  // ID_Cliente
+  if (
+    ID_Cliente === undefined ||
+    ID_Cliente === null ||
+    !Number.isInteger(Number(ID_Cliente))
+  ) {
     errores.push("ID_Cliente es obligatorio y debe ser un número entero");
   }
 
-  if (!Fecha || isNaN(Date.parse(Fecha))) {
-    errores.push("Fecha es obligatoria y debe tener formato válido (YYYY-MM-DD)");
+  // Fecha
+  if (
+    !Fecha ||
+    typeof Fecha !== "string" ||
+    isNaN(Date.parse(Fecha))
+  ) {
+    errores.push("Fecha es obligatoria y debe tener un formato válido (YYYY-MM-DD)");
   }
 
+  // Zonas
   if (!Array.isArray(Zonas) || Zonas.length === 0) {
     errores.push("Zonas debe ser un array con al menos una zona");
   } else {
     Zonas.forEach((zona, index) => {
-      if (!zona.ID_Zona || !Number.isInteger(zona.ID_Zona)) {
-        errores.push(`Zona #${index + 1}: ID_Zona inválido`);
+      // ID_Zona
+      if (
+        zona.ID_Zona === undefined ||
+        zona.ID_Zona === null ||
+        !Number.isInteger(Number(zona.ID_Zona))
+      ) {
+        errores.push(`Zona #${index + 1}: ID_Zona es obligatorio y debe ser un número entero`);
       }
 
+      // Potencia
       if (
         zona.Potencia === undefined ||
         typeof zona.Potencia !== "number" ||
@@ -27,7 +45,8 @@ function validarCrearSesion(body) {
         errores.push(`Zona #${index + 1}: Potencia debe ser un número mayor a 0`);
       }
 
-      if (zona.Notas && typeof zona.Notas !== "string") {
+      // Notas
+      if (zona.Notas !== undefined && typeof zona.Notas !== "string") {
         errores.push(`Zona #${index + 1}: Notas debe ser texto`);
       }
     });
