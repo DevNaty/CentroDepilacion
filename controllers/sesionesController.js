@@ -25,10 +25,10 @@ class SesionesController {
         }
     }
 
-    async createSesiones(req, res) {
+    async createSesion(req, res) {
         try {
-            const newSesiones = await SesionesService.createSesiones(req.body);
-            res.status(201).json(newSesiones);
+            const newSesion = await SesionesService.createSesion(req.body);
+            res.status(201).json(newSesion);
         } catch (err) {
             res.status(400).json({ message: err.message });
         }
@@ -74,6 +74,20 @@ class SesionesController {
             res.status(500).json({ message: err.message });
         }
     }
-}
+    async getDetalleSesion(req, res) {
+  const { id } = req.params;
 
+  try {
+    const detalle = await SesionesService.getDetalleSesion(id);
+
+    if (!detalle) {
+      return res.status(404).json({ message: "Sesión no encontrada" });
+    }
+
+    res.json(detalle);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+}
+}
 module.exports = new SesionesController();

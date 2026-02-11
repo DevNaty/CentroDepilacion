@@ -10,5 +10,7 @@ router.get('/:id', clientesController.getClienteById);
 router.post('/', clientesController.createCliente);
 router.put('/:id', clientesController.updateCliente);
 router.delete('/:id', clientesController.deleteCliente);
+router.get("/:id/sesiones", clientesController.getHistorialSesiones);
+
 
 module.exports = router;

@@ -1,4 +1,4 @@
-// services/sesionesService.js
+
 const { sql } = require('../config/db');
 
 class SesionesService {
@@ -33,9 +33,9 @@ class SesionesService {
             const result = await request.query`
                 INSERT INTO Sesiones (ID_Cliente, Notas, Fecha)
                 VALUES (@ID_Cliente,  @Notas, @Fecha);
-                SELECT SCOPE_IDENTITY() AS ID_Sesiones;
+                SELECT SCOPE_IDENTITY() AS ID_Sesion;
             `;
-            return { ID_Sesiones: result.recordset[0].ID_Sesiones, ...Sesion };
+            return { ID_Sesion: result.recordset[0].ID_Sesion, ...Sesion };
         } catch (err) {
             throw new Error(`Error al crear sesion: ${err.message}`);
         }
@@ -127,6 +127,43 @@ class SesionesService {
             throw new Error(`Error al eliminar sesion con ID ${id}: ${err.message}`);
         }
     }
+    async getDetalleSesion(idSesion) {
+  try {
+    const request = new sql.Request();
+    request.input("ID_Sesion", sql.Int, idSesion);
+
+    const result = await request.query(`
+      SELECT 
+        s.ID_Sesion,
+        s.Fecha,
+        z.ID_Zona,
+        z.Nombre_Zona,
+        ds.Potencia,
+        ds.Notas
+      FROM Sesiones s
+      INNER JOIN DetallesSesiones ds 
+        ON s.ID_Sesion = ds.ID_Sesion
+      INNER JOIN Zonas z 
+        ON ds.ID_Zona = z.ID_Zona
+      WHERE s.ID_Sesion = @ID_Sesion
+    `);
+
+    if (result.recordset.length === 0) return null;
+
+    return {
+      ID_Sesion: result.recordset[0].ID_Sesion,
+      Fecha: result.recordset[0].Fecha,
+      Zonas: result.recordset.map(row => ({
+        ID_Zona: row.ID_Zona,
+        Nombre_Zona: row.Nombre_Zona,
+        Potencia: row.Potencia,
+        Notas: row.Notas
+      }))
+    };
+  } catch (err) {
+    throw new Error("Error al obtener detalle de sesión");
+  }
+}
 }
 
 module.exports = new SesionesService();

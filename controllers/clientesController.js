@@ -83,6 +83,22 @@ class ClientesController {
             res.status(500).json({ message: err.message });
         }
     }
+    async getHistorialSesiones(req, res) {
+  const { id } = req.params;
+
+  if (!Number.isInteger(Number(id))) {
+    return res.status(400).json({ message: "ID de cliente inválido" });
+  }
+
+  try {
+    const sesiones = await clientesService.getHistorialSesiones(id);
+    res.json(sesiones);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
 }
+
+}
+
 
 module.exports = new ClientesController();

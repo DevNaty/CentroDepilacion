@@ -150,6 +150,29 @@ class ClientesService {
 
     return result.rowsAffected[0] > 0;
 }
+async getHistorialSesiones(idCliente) {
+  try {
+    const request = new sql.Request();
+    request.input("ID_Cliente", sql.Int, idCliente);
+
+    const result = await request.query(`
+      SELECT 
+        s.ID_Sesion,
+        s.Fecha,
+        COUNT(ds.ID_DetalleSesion) AS CantidadZonas
+      FROM Sesiones s
+      LEFT JOIN DetallesSesiones ds 
+        ON s.ID_Sesion = ds.ID_Sesion
+      WHERE s.ID_Cliente = @ID_Cliente
+      GROUP BY s.ID_Sesion, s.Fecha
+      ORDER BY s.Fecha DESC
+    `);
+
+    return result.recordset;
+  } catch (err) {
+    throw new Error("Error al obtener historial de sesiones");
+  }
+}
 
 }
 

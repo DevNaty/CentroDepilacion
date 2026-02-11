@@ -1,6 +1,5 @@
-// routes/zonaRoutes.js
 const express = require('express');
-const turnosController = require('../controllers/turnosController.');
+const turnosController = require('../controllers/turnosController');
 const router = express.Router();
 
 router.get('/', turnosController.getAllTurnos);
