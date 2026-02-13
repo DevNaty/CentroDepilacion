@@ -19,6 +19,12 @@ const router = express.Router();
  *     responses:
  *       200:
  *         description: Lista de clientes
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/Cliente'
  */
 router.get('/', clientesController.getAllClientes);
 
@@ -30,16 +36,23 @@ router.get('/', clientesController.getAllClientes);
  *     tags: [Clientes]
  *     parameters:
  *       - in: query
- *         name: q
+ *         name: texto
+ *         required: true
  *         schema:
  *           type: string
- *         required: true
- *         description: Texto a buscar
+ *         description: Texto a buscar (nombre, apellido, teléfono o email)
  *     responses:
  *       200:
  *         description: Resultados de búsqueda
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/Cliente'
  */
 router.get('/buscar', clientesController.buscarClientes);
+
 
 /**
  * @swagger
@@ -50,8 +63,29 @@ router.get('/buscar', clientesController.buscarClientes);
  *     responses:
  *       200:
  *         description: Listado especial de clientes
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *                 properties:
+ *                   ID_Cliente:
+ *                     type: integer
+ *                   Nombre:
+ *                     type: string
+ *                   Apellido:
+ *                     type: string
+ *                   Telefono:
+ *                     type: string
+ *                   UltimaSesion:
+ *                     type: string
+ *                     format: date
+ *                   Zonas:
+ *                     type: string
  */
 router.get('/listado', clientesController.getClientesListado);
+
 
 /**
  * @swagger
@@ -65,11 +99,29 @@ router.get('/listado', clientesController.getClientesListado);
  *         required: true
  *         schema:
  *           type: integer
+ *         description: ID del cliente
  *     responses:
  *       200:
  *         description: Historial de sesiones
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *                 properties:
+ *                   ID_Sesion:
+ *                     type: integer
+ *                   Fecha:
+ *                     type: string
+ *                     format: date
+ *                   CantidadZonas:
+ *                     type: integer
+ *       404:
+ *         description: Cliente no encontrado
  */
 router.get('/:id/sesiones', clientesController.getHistorialSesiones);
+
 
 /**
  * @swagger
@@ -83,13 +135,20 @@ router.get('/:id/sesiones', clientesController.getHistorialSesiones);
  *         required: true
  *         schema:
  *           type: integer
+ *         description: ID del cliente
  *     responses:
  *       200:
  *         description: Cliente encontrado
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Cliente'
  *       404:
  *         description: Cliente no encontrado
  */
 router.get('/:id', clientesController.getClienteById);
+
+
 
 /**
  * @swagger
@@ -102,32 +161,25 @@ router.get('/:id', clientesController.getClienteById);
  *       content:
  *         application/json:
  *           schema:
- *             type: object
- *             required:
- *               - Nombre
- *               - Apellido
- *             properties:
- *               Nombre:
- *                 type: string
- *               Apellido:
- *                 type: string
- *               Telefono:
- *                 type: string
- *               Email:
- *                 type: string
- *               Notas:
- *                 type: string
+ *             $ref: '#/components/schemas/Cliente'
  *     responses:
  *       201:
- *         description: Cliente creado
+ *         description: Cliente creado correctamente
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Cliente'
+ *       400:
+ *         description: Datos inválidos
  */
 router.post('/', clientesController.createCliente);
+
 
 /**
  * @swagger
  * /api/clientes/{id}:
  *   put:
- *     summary: Actualizar un cliente
+ *     summary: Actualizar un cliente existente
  *     tags: [Clientes]
  *     parameters:
  *       - in: path
@@ -135,9 +187,22 @@ router.post('/', clientesController.createCliente);
  *         required: true
  *         schema:
  *           type: integer
+ *         description: ID del cliente a actualizar
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/Cliente'
  *     responses:
  *       200:
- *         description: Cliente actualizado
+ *         description: Cliente actualizado correctamente
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Cliente'
+ *       400:
+ *         description: Datos inválidos
  *       404:
  *         description: Cliente no encontrado
  */
@@ -155,12 +220,14 @@ router.put('/:id', clientesController.updateCliente);
  *         required: true
  *         schema:
  *           type: integer
+ *         description: ID del cliente a eliminar
  *     responses:
  *       204:
- *         description: Cliente eliminado
+ *         description: Cliente eliminado correctamente
  *       404:
  *         description: Cliente no encontrado
  */
 router.delete('/:id', clientesController.deleteCliente);
+
 
 module.exports = router;

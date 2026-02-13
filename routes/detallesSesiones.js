@@ -8,8 +8,9 @@ const router = express.Router();
  * @swagger
  * tags:
  *   name: DetallesSesiones
- *   description: Detalles de las zonas tratadas en una sesión
+ *   description: Gestión de detalles de sesiones
  */
+
 
 /**
  * @swagger
@@ -20,9 +21,42 @@ const router = express.Router();
  *     responses:
  *       200:
  *         description: Lista de detalles de sesiones
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/DetalleSesion'
  */
 router.get('/', detallesSesionesController.getAllDetallesSesiones);
-
+/**
+ * @swagger
+ * /api/detallesSesiones/sesion/{idSesion}:
+ *   get:
+ *     summary: Obtener los detalles de una sesión por ID de sesión
+ *     tags: [DetallesSesiones]
+ *     parameters:
+ *       - in: path
+ *         name: idSesion
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: ID de la sesión
+ *     responses:
+ *       200:
+ *         description: Lista de detalles de la sesión
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/DetalleSesion'
+ *       400:
+ *         description: ID de sesión inválido
+ *       404:
+ *         description: No se encontraron detalles para la sesión
+ */
+router.get('/sesion/:idSesion', detallesSesionesController.getDetallesBySesion);
 /**
  * @swagger
  * /api/detallesSesiones/{id}:
@@ -35,14 +69,18 @@ router.get('/', detallesSesionesController.getAllDetallesSesiones);
  *         required: true
  *         schema:
  *           type: integer
+ *         description: ID del detalle de sesión
  *     responses:
  *       200:
- *         description: Detalle de sesión encontrado
+ *         description: Detalle encontrado
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/DetalleSesion'
  *       404:
  *         description: Detalle de sesión no encontrado
  */
 router.get('/:id', detallesSesionesController.getDetallesSesionesById);
-
 /**
  * @swagger
  * /api/detallesSesiones:
@@ -54,26 +92,12 @@ router.get('/:id', detallesSesionesController.getDetallesSesionesById);
  *       content:
  *         application/json:
  *           schema:
- *             type: object
- *             required:
- *               - ID_Sesion
- *               - ID_Zona
- *               - Potencia
- *             properties:
- *               ID_Sesion:
- *                 type: integer
- *               ID_Zona:
- *                 type: integer
- *               Potencia:
- *                 type: string
- *               Notas:
- *                 type: string
+ *             $ref: '#/components/schemas/DetalleSesionInput'
  *     responses:
  *       201:
- *         description: Detalle de sesión creado
+ *         description: Detalle creado correctamente
  */
 router.post('/', detallesSesionesController.createDetallesSesiones);
-
 /**
  * @swagger
  * /api/detallesSesiones/{id}:
@@ -91,24 +115,14 @@ router.post('/', detallesSesionesController.createDetallesSesiones);
  *       content:
  *         application/json:
  *           schema:
- *             type: object
- *             properties:
- *               ID_Sesion:
- *                 type: integer
- *               ID_Zona:
- *                 type: integer
- *               Potencia:
- *                 type: string
- *               Notas:
- *                 type: string
+ *             $ref: '#/components/schemas/DetalleSesionInput'
  *     responses:
  *       200:
- *         description: Detalle de sesión actualizado
+ *         description: Detalle actualizado
  *       404:
- *         description: Detalle de sesión no encontrado
+ *         description: Detalle no encontrado
  */
 router.put('/:id', detallesSesionesController.updateDetallesSesiones);
-
 /**
  * @swagger
  * /api/detallesSesiones/{id}:
@@ -123,9 +137,9 @@ router.put('/:id', detallesSesionesController.updateDetallesSesiones);
  *           type: integer
  *     responses:
  *       204:
- *         description: Detalle de sesión eliminado
+ *         description: Detalle eliminado correctamente
  *       404:
- *         description: Detalle de sesión no encontrado
+ *         description: Detalle no encontrado
  */
 router.delete('/:id', detallesSesionesController.deleteDetallesSesiones);
 

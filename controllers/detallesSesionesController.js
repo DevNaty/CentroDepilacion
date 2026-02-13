@@ -28,6 +28,21 @@ class DetallesSesionesController {
     res.json(detalle);
   });
 
+  // GET /detalles-sesiones/sesion/:idSesion
+getDetallesBySesion = catchAsync(async (req, res, next) => {
+  const idSesion = Number(req.params.idSesion);
+
+  if (!Number.isInteger(idSesion)) {
+    return next(new AppError('ID de sesión inválido', 400));
+  }
+
+  const detalles =
+    await detallesSesionesService.getDetallesBySesion(idSesion);
+
+  res.json(detalles);
+});
+
+
   // POST /detalles-sesiones
   createDetallesSesiones = catchAsync(async (req, res) => {
     const nuevoDetalle = await detallesSesionesService.createDetallesSesiones(req.body);

@@ -19,8 +19,40 @@ const router = express.Router();
  *     responses:
  *       200:
  *         description: Lista de sesiones
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/Sesion'
  */
 router.get('/', sesionesController.getAllSesiones);
+
+/**
+ * @swagger
+ * /api/sesiones/{id}/detalles:
+ *   get:
+ *     summary: Obtener el detalle completo de una sesión (zonas tratadas)
+ *     tags: [Sesiones]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: Detalle de la sesión
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/DetalleSesion'
+ *       404:
+ *         description: Sesión no encontrada
+ */
+router.get('/:id/detalles', sesionesController.getDetalleSesion);
 
 /**
  * @swagger
@@ -37,6 +69,10 @@ router.get('/', sesionesController.getAllSesiones);
  *     responses:
  *       200:
  *         description: Sesión encontrada
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Sesion'
  *       404:
  *         description: Sesión no encontrada
  */
@@ -68,6 +104,10 @@ router.get('/:id', sesionesController.getSesionById);
  *     responses:
  *       201:
  *         description: Sesión creada
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Sesion'
  */
 router.post('/', sesionesController.createSesion);
 
@@ -96,17 +136,7 @@ router.post('/', sesionesController.createSesion);
  *               Detalles:
  *                 type: array
  *                 items:
- *                   type: object
- *                   required:
- *                     - ID_Zona
- *                     - Potencia
- *                   properties:
- *                     ID_Zona:
- *                       type: integer
- *                     Potencia:
- *                       type: string
- *                     Notas:
- *                       type: string
+ *                   $ref: '#/components/schemas/DetalleSesionInput'
  *     responses:
  *       201:
  *         description: Sesión completa creada
@@ -166,25 +196,5 @@ router.put('/:id', sesionesController.updateSesion);
  *         description: Sesión no encontrada
  */
 router.delete('/:id', sesionesController.deleteSesion);
-
-/**
- * @swagger
- * /api/sesiones/{id}/detalles:
- *   get:
- *     summary: Obtener el detalle completo de una sesión (zonas tratadas)
- *     tags: [Sesiones]
- *     parameters:
- *       - in: path
- *         name: id
- *         required: true
- *         schema:
- *           type: integer
- *     responses:
- *       200:
- *         description: Detalle de la sesión
- *       404:
- *         description: Sesión no encontrada
- */
-router.get('/:id/detalles', sesionesController.getDetalleSesion);
 
 module.exports = router;
