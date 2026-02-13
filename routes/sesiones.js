@@ -3,15 +3,188 @@ const express = require('express');
 const sesionesController = require('../controllers/sesionesController');
 const router = express.Router();
 
-// Detalle de una sesión (SIEMPRE antes que :id)
-router.get('/:id/detalles', sesionesController.getDetalleSesion);
+/**
+ * @swagger
+ * tags:
+ *   name: Sesiones
+ *   description: Gestión de sesiones de depilación
+ */
 
-// CRUD sesiones
+/**
+ * @swagger
+ * /api/sesiones:
+ *   get:
+ *     summary: Obtener todas las sesiones
+ *     tags: [Sesiones]
+ *     responses:
+ *       200:
+ *         description: Lista de sesiones
+ */
 router.get('/', sesionesController.getAllSesiones);
+
+/**
+ * @swagger
+ * /api/sesiones/{id}:
+ *   get:
+ *     summary: Obtener una sesión por ID
+ *     tags: [Sesiones]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: Sesión encontrada
+ *       404:
+ *         description: Sesión no encontrada
+ */
 router.get('/:id', sesionesController.getSesionById);
+
+/**
+ * @swagger
+ * /api/sesiones:
+ *   post:
+ *     summary: Crear una sesión simple
+ *     tags: [Sesiones]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - ID_Cliente
+ *               - Fecha
+ *             properties:
+ *               ID_Cliente:
+ *                 type: integer
+ *               Fecha:
+ *                 type: string
+ *                 format: date
+ *               Notas:
+ *                 type: string
+ *     responses:
+ *       201:
+ *         description: Sesión creada
+ */
 router.post('/', sesionesController.createSesion);
+
+/**
+ * @swagger
+ * /api/sesiones/completa:
+ *   post:
+ *     summary: Crear una sesión completa con zonas (transacción)
+ *     tags: [Sesiones]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - ID_Cliente
+ *               - Fecha
+ *               - Detalles
+ *             properties:
+ *               ID_Cliente:
+ *                 type: integer
+ *               Fecha:
+ *                 type: string
+ *                 format: date
+ *               Detalles:
+ *                 type: array
+ *                 items:
+ *                   type: object
+ *                   required:
+ *                     - ID_Zona
+ *                     - Potencia
+ *                   properties:
+ *                     ID_Zona:
+ *                       type: integer
+ *                     Potencia:
+ *                       type: string
+ *                     Notas:
+ *                       type: string
+ *     responses:
+ *       201:
+ *         description: Sesión completa creada
+ */
 router.post('/completa', sesionesController.createSesionCompleta);
+
+/**
+ * @swagger
+ * /api/sesiones/{id}:
+ *   put:
+ *     summary: Actualizar una sesión
+ *     tags: [Sesiones]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               ID_Cliente:
+ *                 type: integer
+ *               Fecha:
+ *                 type: string
+ *                 format: date
+ *               Notas:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Sesión actualizada
+ *       404:
+ *         description: Sesión no encontrada
+ */
 router.put('/:id', sesionesController.updateSesion);
+
+/**
+ * @swagger
+ * /api/sesiones/{id}:
+ *   delete:
+ *     summary: Eliminar una sesión
+ *     tags: [Sesiones]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       204:
+ *         description: Sesión eliminada
+ *       404:
+ *         description: Sesión no encontrada
+ */
 router.delete('/:id', sesionesController.deleteSesion);
+
+/**
+ * @swagger
+ * /api/sesiones/{id}/detalles:
+ *   get:
+ *     summary: Obtener el detalle completo de una sesión (zonas tratadas)
+ *     tags: [Sesiones]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: Detalle de la sesión
+ *       404:
+ *         description: Sesión no encontrada
+ */
+router.get('/:id/detalles', sesionesController.getDetalleSesion);
 
 module.exports = router;
