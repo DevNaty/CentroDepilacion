@@ -1,120 +1,104 @@
-// controllers/clientesController.js
 const clientesService = require('../services/clientesService');
+const catchAsync = require('../src/utils/catchAsync');
+const AppError = require('../src/appError');
 
 class ClientesController {
 
-  async buscarClientes(req, res) {
+  // 🔍 Buscar clientes
+  buscarClientes = catchAsync(async (req, res, next) => {
     const { q } = req.query;
 
     if (!q || q.trim().length < 2) {
-      return res.status(400).json({
-        message: "El texto de búsqueda debe tener al menos 2 caracteres"
-      });
+      return next(
+        new AppError('El texto de búsqueda debe tener al menos 2 caracteres', 400)
+      );
     }
 
-    try {
-      const clientes = await clientesService.buscarClientes(q.trim());
-      res.json(clientes);
-    } catch (err) {
-      res.status(500).json({ message: err.message });
-    }
-  }
+    const clientes = await clientesService.buscarClientes(q.trim());
+    res.json(clientes);
+  });
 
-  async getAllClientes(req, res) {
-    try {
-      const clientes = await clientesService.getAllClientes();
-      res.json(clientes);
-    } catch (err) {
-      res.status(500).json({ message: err.message });
-    }
-  }
+  // 📋 Obtener todos los clientes
+  getAllClientes = catchAsync(async (req, res) => {
+    const clientes = await clientesService.getAllClientes();
+    res.json(clientes);
+  });
 
-  async getClientesListado(req, res) {
-    try {
-      const clientes = await clientesService.getClientesConUltimaSesion();
-      res.json(clientes);
-    } catch (err) {
-      res.status(500).json({ message: err.message });
-    }
-  }
+  // 📊 Listado con última sesión
+  getClientesListado = catchAsync(async (req, res) => {
+    const clientes = await clientesService.getClientesConUltimaSesion();
+    res.json(clientes);
+  });
 
-  async getClienteById(req, res) {
+  // 👤 Obtener cliente por ID
+  getClienteById = catchAsync(async (req, res, next) => {
     const id = Number(req.params.id);
 
     if (!Number.isInteger(id)) {
-      return res.status(400).json({ message: "ID de cliente inválido" });
+      return next(new AppError('ID de cliente inválido', 400));
     }
 
-    try {
-      const cliente = await clientesService.getClienteById(id);
-      if (!cliente) {
-        return res.status(404).json({ message: "Cliente no encontrado" });
-      }
-      res.json(cliente);
-    } catch (err) {
-      res.status(500).json({ message: err.message });
-    }
-  }
+    const cliente = await clientesService.getClienteById(id);
 
-  async createCliente(req, res) {
-    try {
-      const newCliente = await clientesService.createCliente(req.body);
-      res.status(201).json(newCliente);
-    } catch (err) {
-      res.status(400).json({ message: err.message });
+    if (!cliente) {
+      return next(new AppError('Cliente no encontrado', 404));
     }
-  }
 
-  async updateCliente(req, res) {
+    res.json(cliente);
+  });
+
+  // ➕ Crear cliente
+  createCliente = catchAsync(async (req, res) => {
+    const newCliente = await clientesService.createCliente(req.body);
+    res.status(201).json(newCliente);
+  });
+
+  // ✏️ Actualizar cliente
+  updateCliente = catchAsync(async (req, res, next) => {
     const id = Number(req.params.id);
 
     if (!Number.isInteger(id)) {
-      return res.status(400).json({ message: "ID de cliente inválido" });
+      return next(new AppError('ID de cliente inválido', 400));
     }
 
-    try {
-      const updatedCliente = await clientesService.updateCliente(id, req.body);
-      if (!updatedCliente) {
-        return res.status(404).json({ message: "Cliente no encontrado" });
-      }
-      res.json(updatedCliente);
-    } catch (err) {
-      res.status(400).json({ message: err.message });
-    }
-  }
+    const clienteActualizado = await clientesService.updateCliente(id, req.body);
 
-  async deleteCliente(req, res) {
+    if (!clienteActualizado) {
+      return next(new AppError('Cliente no encontrado', 404));
+    }
+
+    res.json(clienteActualizado);
+  });
+
+  // 🗑️ Eliminar cliente
+  deleteCliente = catchAsync(async (req, res, next) => {
     const id = Number(req.params.id);
 
     if (!Number.isInteger(id)) {
-      return res.status(400).json({ message: "ID de cliente inválido" });
+      return next(new AppError('ID de cliente inválido', 400));
     }
 
-    try {
-      const deleted = await clientesService.deleteCliente(id);
-      if (!deleted) {
-        return res.status(404).json({ message: "Cliente no encontrado" });
-      }
-      res.status(204).send();
-    } catch (err) {
-      res.status(500).json({ message: err.message });
-    }
-  }
+    const eliminado = await clientesService.deleteCliente(id);
 
-  async getHistorialSesiones(req, res) {
+    if (!eliminado) {
+      return next(new AppError('Cliente no encontrado', 404));
+    }
+
+    res.status(204).send();
+  });
+
+  // 📚 Historial de sesiones del cliente
+  getHistorialSesiones = catchAsync(async (req, res, next) => {
     const id = Number(req.params.id);
 
     if (!Number.isInteger(id)) {
-      return res.status(400).json({ message: "ID de cliente inválido" });
+      return next(new AppError('ID de cliente inválido', 400));
     }
 
-    try {
-      const sesiones = await clientesService.getHistorialSesiones(id);
-      res.json(sesiones);
-    } catch (err) {
-      res.status(500).json({ message: err.message });
-    }
-  }
+    const sesiones = await clientesService.getHistorialSesiones(id);
+    res.json(sesiones);
+  });
+
 }
 
 module.exports = new ClientesController();

@@ -1,81 +1,95 @@
+// controllers/turnosController.js
 const turnosService = require('../services/turnosService');
+const catchAsync = require('../src/utils/catchAsync');
+const AppError = require('../src/appError');
 
 class TurnosController {
 
-  async getAllTurnos(req, res) {
-    try {
-      const turnos = await turnosService.getAllTurnos();
-      res.json(turnos);
-    } catch (err) {
-      res.status(500).json({ message: err.message });
-    }
-  }
+  // GET /turnos
+  getAllTurnos = catchAsync(async (req, res) => {
+    const turnos = await turnosService.getAllTurnos();
+    res.json(turnos);
+  });
 
-  async getTurnosVista(req, res) {
-    try {
-      const turnos = await turnosService.getTurnosVista();
-      res.json(turnos);
-    } catch (err) {
-      res.status(500).json({ message: err.message });
-    }
-  }
+  // GET /turnos/vista
+  getTurnosVista = catchAsync(async (req, res) => {
+    const turnos = await turnosService.getTurnosVista();
+    res.json(turnos);
+  });
 
-  async getTurnoById(req, res) {
-    try {
-      const turno = await turnosService.getTurnoById(req.params.id);
-      if (!turno) {
-        return res.status(404).json({ message: 'Turno no encontrado' });
-      }
-      res.json(turno);
-    } catch (err) {
-      res.status(500).json({ message: err.message });
-    }
-  }
+  // GET /turnos/:id
+  getTurnoById = catchAsync(async (req, res, next) => {
+    const id = Number(req.params.id);
 
-  async getTurnoByIdVista(req, res) {
-    try {
-      const turno = await turnosService.getTurnoByIdVista(req.params.id);
-      if (!turno) {
-        return res.status(404).json({ message: 'Turno no encontrado' });
-      }
-      res.json(turno);
-    } catch (err) {
-      res.status(500).json({ message: err.message });
+    if (!Number.isInteger(id)) {
+      return next(new AppError('ID de turno inválido', 400));
     }
-  }
 
-  async createTurno(req, res) {
-    try {
-      const newTurno = await turnosService.createTurno(req.body);
-      res.status(201).json(newTurno);
-    } catch (err) {
-      res.status(400).json({ message: err.message });
-    }
-  }
+    const turno = await turnosService.getTurnoById(id);
 
-  async updateTurno(req, res) {
-    try {
-      const turno = await turnosService.updateTurno(req.params.id, req.body);
-      if (!turno) {
-        return res.status(404).json({ message: 'Turno no encontrado' });
-      }
-      res.json(turno);
-    } catch (err) {
-      res.status(400).json({ message: err.message });
+    if (!turno) {
+      return next(new AppError('Turno no encontrado', 404));
     }
-  }
 
-  async deleteTurno(req, res) {
-    try {
-      const deleted = await turnosService.deleteTurno(req.params.id);
-      if (!deleted) {
-        return res.status(404).json({ message: 'Turno no encontrado' });
-      }
-      res.status(204).send();
-    } catch (err) {
-      res.status(500).json({ message: err.message });
+    res.json(turno);
+  });
+
+  // GET /turnos/:id/vista
+  getTurnoByIdVista = catchAsync(async (req, res, next) => {
+    const id = Number(req.params.id);
+
+    if (!Number.isInteger(id)) {
+      return next(new AppError('ID de turno inválido', 400));
     }
-  }
+
+    const turno = await turnosService.getTurnoByIdVista(id);
+
+    if (!turno) {
+      return next(new AppError('Turno no encontrado', 404));
+    }
+
+    res.json(turno);
+  });
+
+  // POST /turnos
+  createTurno = catchAsync(async (req, res) => {
+    const newTurno = await turnosService.createTurno(req.body);
+    res.status(201).json(newTurno);
+  });
+
+  // PUT /turnos/:id
+  updateTurno = catchAsync(async (req, res, next) => {
+    const id = Number(req.params.id);
+
+    if (!Number.isInteger(id)) {
+      return next(new AppError('ID de turno inválido', 400));
+    }
+
+    const turno = await turnosService.updateTurno(id, req.body);
+
+    if (!turno) {
+      return next(new AppError('Turno no encontrado', 404));
+    }
+
+    res.json(turno);
+  });
+
+  // DELETE /turnos/:id
+  deleteTurno = catchAsync(async (req, res, next) => {
+    const id = Number(req.params.id);
+
+    if (!Number.isInteger(id)) {
+      return next(new AppError('ID de turno inválido', 400));
+    }
+
+    const deleted = await turnosService.deleteTurno(id);
+
+    if (!deleted) {
+      return next(new AppError('Turno no encontrado', 404));
+    }
+
+    res.status(204).send();
+  });
 }
 
 module.exports = new TurnosController();

@@ -1,69 +1,72 @@
+// controllers/detallesSesionesController.js
 const detallesSesionesService = require('../services/detallesSesionesService');
+const catchAsync = require('../src/utils/catchAsync');
+const AppError = require('../src/appError');
 
 class DetallesSesionesController {
 
-    async getAllDetallesSesiones(req, res) {
-        try {
-            const detalles = await detallesSesionesService.getAllDetallesSesiones();
-            res.json(detalles);
-        } catch (err) {
-            res.status(500).json({ message: err.message });
-        }
+  // GET /detalles-sesiones
+  getAllDetallesSesiones = catchAsync(async (req, res) => {
+    const detalles = await detallesSesionesService.getAllDetallesSesiones();
+    res.json(detalles);
+  });
+
+  // GET /detalles-sesiones/:id
+  getDetallesSesionesById = catchAsync(async (req, res, next) => {
+    const id = Number(req.params.id);
+
+    if (!Number.isInteger(id)) {
+      return next(new AppError('ID de detalle de sesión inválido', 400));
     }
 
-    async getDetallesSesionesById(req, res) {
-        try {
-            const { id } = req.params;
-            const detalle = await detallesSesionesService.getDetallesSesionesById(id);
+    const detalle = await detallesSesionesService.getDetallesSesionesById(id);
 
-            if (!detalle) {
-                return res.status(404).json({ message: 'Detalle de sesión no encontrado' });
-            }
-
-            res.json(detalle);
-        } catch (err) {
-            res.status(500).json({ message: err.message });
-        }
+    if (!detalle) {
+      return next(new AppError('Detalle de sesión no encontrado', 404));
     }
 
-    async createDetallesSesiones(req, res) {
-        try {
-            const nuevoDetalle = await detallesSesionesService.createDetallesSesiones(req.body);
-            res.status(201).json(nuevoDetalle);
-        } catch (err) {
-            res.status(400).json({ message: err.message });
-        }
+    res.json(detalle);
+  });
+
+  // POST /detalles-sesiones
+  createDetallesSesiones = catchAsync(async (req, res) => {
+    const nuevoDetalle = await detallesSesionesService.createDetallesSesiones(req.body);
+    res.status(201).json(nuevoDetalle);
+  });
+
+  // PUT /detalles-sesiones/:id
+  updateDetallesSesiones = catchAsync(async (req, res, next) => {
+    const id = Number(req.params.id);
+
+    if (!Number.isInteger(id)) {
+      return next(new AppError('ID de detalle de sesión inválido', 400));
     }
 
-    async updateDetallesSesiones(req, res) {
-        try {
-            const { id } = req.params;
-            const detalleActualizado = await detallesSesionesService.updateDetallesSesiones(id, req.body);
+    const detalleActualizado = await detallesSesionesService.updateDetallesSesiones(id, req.body);
 
-            if (!detalleActualizado) {
-                return res.status(404).json({ message: 'Detalle de sesión no encontrado' });
-            }
-
-            res.json(detalleActualizado);
-        } catch (err) {
-            res.status(400).json({ message: err.message });
-        }
+    if (!detalleActualizado) {
+      return next(new AppError('Detalle de sesión no encontrado', 404));
     }
 
-    async deleteDetallesSesiones(req, res) {
-        try {
-            const { id } = req.params;
-            const eliminado = await detallesSesionesService.deleteDetallesSesiones(id);
+    res.json(detalleActualizado);
+  });
 
-            if (!eliminado) {
-                return res.status(404).json({ message: 'Detalle de sesión no encontrado' });
-            }
+  // DELETE /detalles-sesiones/:id
+  deleteDetallesSesiones = catchAsync(async (req, res, next) => {
+    const id = Number(req.params.id);
 
-            res.status(204).send();
-        } catch (err) {
-            res.status(500).json({ message: err.message });
-        }
+    if (!Number.isInteger(id)) {
+      return next(new AppError('ID de detalle de sesión inválido', 400));
     }
+
+    const eliminado = await detallesSesionesService.deleteDetallesSesiones(id);
+
+    if (!eliminado) {
+      return next(new AppError('Detalle de sesión no encontrado', 404));
+    }
+
+    res.status(204).send();
+  });
 }
 
 module.exports = new DetallesSesionesController();

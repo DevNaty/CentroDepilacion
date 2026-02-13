@@ -1,114 +1,112 @@
 // controllers/sesionesController.js
 const sesionesService = require('../services/sesionesService');
 const { validarCrearSesion } = require('../validators/sesiones.validator');
+const catchAsync = require('../src/utils/catchAsync');
+const AppError = require('../src/appError');
 
 class SesionesController {
 
-  async getAllSesiones(req, res) {
-    try {
-      const sesiones = await sesionesService.getAllSesiones();
-      res.json(sesiones);
-    } catch (err) {
-      res.status(500).json({ message: err.message });
-    }
-  }
+  // GET /sesiones
+  getAllSesiones = catchAsync(async (req, res) => {
+    const sesiones = await sesionesService.getAllSesiones();
+    res.json(sesiones);
+  });
 
-  async getSesionById(req, res) {
-    const { id } = req.params;
+  // GET /sesiones/:id
+  getSesionById = catchAsync(async (req, res, next) => {
+    const id = Number(req.params.id);
 
-    if (!Number.isInteger(Number(id))) {
-      return res.status(400).json({ message: 'ID de sesión inválido' });
+    if (!Number.isInteger(id)) {
+      return next(new AppError('ID de sesión inválido', 400));
     }
 
-    try {
-      const sesion = await sesionesService.getSesionesById(id);
-      if (!sesion) {
-        return res.status(404).json({ message: 'Sesión no encontrada' });
-      }
-      res.json(sesion);
-    } catch (err) {
-      res.status(500).json({ message: err.message });
-    }
-  }
+    const sesion = await sesionesService.getSesionesById(id);
 
-  async createSesion(req, res) {
-    try {
-      const nuevaSesion = await sesionesService.createSesion(req.body);
-      res.status(201).json(nuevaSesion);
-    } catch (err) {
-      res.status(400).json({ message: err.message });
+    if (!sesion) {
+      return next(new AppError('Sesión no encontrada', 404));
     }
-  }
 
-  async createSesionCompleta(req, res) {
+    res.json(sesion);
+  });
+
+  // POST /sesiones
+  createSesion = catchAsync(async (req, res, next) => {
+    const { ID_Cliente, Fecha } = req.body;
+
+    if (!ID_Cliente || !Number.isInteger(ID_Cliente)) {
+      return next(new AppError('ID_Cliente es obligatorio y debe ser un número entero', 400));
+    }
+
+    if (!Fecha || isNaN(Date.parse(Fecha))) {
+      return next(new AppError('Fecha inválida', 400));
+    }
+
+    const nuevaSesion = await sesionesService.createSesion(req.body);
+    res.status(201).json(nuevaSesion);
+  });
+
+  // POST /sesiones/completa
+  createSesionCompleta = catchAsync(async (req, res, next) => {
     const errores = validarCrearSesion(req.body);
 
     if (errores.length > 0) {
-      return res.status(400).json({ errores });
+      return next(new AppError(errores.join(' | '), 400));
     }
 
-    try {
-      const sesion = await sesionesService.createSesionCompleta(req.body);
-      res.status(201).json(sesion);
-    } catch (err) {
-      console.error(err);
-      res.status(500).json({ message: 'Error interno del servidor' });
-    }
-  }
+    const sesion = await sesionesService.createSesionCompleta(req.body);
+    res.status(201).json(sesion);
+  });
 
-  async updateSesion(req, res) {
-    const { id } = req.params;
+  // PUT /sesiones/:id
+  updateSesion = catchAsync(async (req, res, next) => {
+    const id = Number(req.params.id);
 
-    if (!Number.isInteger(Number(id))) {
-      return res.status(400).json({ message: 'ID de sesión inválido' });
+    if (!Number.isInteger(id)) {
+      return next(new AppError('ID de sesión inválido', 400));
     }
 
-    try {
-      const sesionActualizada = await sesionesService.updateSesiones(id, req.body);
-      if (!sesionActualizada) {
-        return res.status(404).json({ message: 'Sesión no encontrada' });
-      }
-      res.json(sesionActualizada);
-    } catch (err) {
-      res.status(500).json({ message: err.message });
-    }
-  }
+    const sesionActualizada = await sesionesService.updateSesiones(id, req.body);
 
-  async deleteSesion(req, res) {
-    const { id } = req.params;
-
-    if (!Number.isInteger(Number(id))) {
-      return res.status(400).json({ message: 'ID de sesión inválido' });
+    if (!sesionActualizada) {
+      return next(new AppError('Sesión no encontrada', 404));
     }
 
-    try {
-      const deleted = await sesionesService.deleteSesiones(id);
-      if (!deleted) {
-        return res.status(404).json({ message: 'Sesión no encontrada' });
-      }
-      res.status(204).send();
-    } catch (err) {
-      res.status(500).json({ message: err.message });
-    }
-  }
+    res.json(sesionActualizada);
+  });
 
-  async getDetalleSesion(req, res) {
-    const { id } = req.params;
+  // DELETE /sesiones/:id
+  deleteSesion = catchAsync(async (req, res, next) => {
+    const id = Number(req.params.id);
 
-    if (!Number.isInteger(Number(id))) {
-      return res.status(400).json({ message: 'ID de sesión inválido' });
+    if (!Number.isInteger(id)) {
+      return next(new AppError('ID de sesión inválido', 400));
     }
 
-    try {
-      const detalle = await sesionesService.getDetalleSesion(id);
-      if (!detalle) {
-        return res.status(404).json({ message: 'Sesión no encontrada' });
-      }
-      res.json(detalle);
-    } catch (err) {
-      res.status(500).json({ message: err.message });
+    const deleted = await sesionesService.deleteSesiones(id);
+
+    if (!deleted) {
+      return next(new AppError('Sesión no encontrada', 404));
     }
-  }
+
+    res.status(204).send();
+  });
+
+  // GET /sesiones/:id/detalle
+  getDetalleSesion = catchAsync(async (req, res, next) => {
+    const id = Number(req.params.id);
+
+    if (!Number.isInteger(id)) {
+      return next(new AppError('ID de sesión inválido', 400));
+    }
+
+    const detalle = await sesionesService.getDetalleSesion(id);
+
+    if (!detalle) {
+      return next(new AppError('Sesión no encontrada', 404));
+    }
+
+    res.json(detalle);
+  });
 }
 
 module.exports = new SesionesController();
