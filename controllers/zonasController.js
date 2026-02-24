@@ -6,67 +6,77 @@ const AppError = require('../src/appError');
 class ZonasController {
 
   // GET /zonas
-  getAllZonas = catchAsync(async (req, res) => {
-    const zonas = await zonasService.getAllZonas();
-    res.json(zonas);
-  });
+getAllZonas = catchAsync(async (req, res) => {
+  const zonas = await zonasService.getAllZonas(req.user.ID_Centro);
+  res.json(zonas);
+});
 
-  // GET /zonas/:id
-  getZonaById = catchAsync(async (req, res, next) => {
-    const id = Number(req.params.id);
+// GET /zonas/:id
+getZonaById = catchAsync(async (req, res, next) => {
+  const id = Number(req.params.id);
 
-    if (!Number.isInteger(id)) {
-      return next(new AppError('ID de zona inválido', 400));
-    }
+  if (!Number.isInteger(id)) {
+    return next(new AppError('ID de zona inválido', 400));
+  }
 
-    const zona = await zonasService.getZonaById(id);
+  const zona = await zonasService.getZonaById(id, req.user.ID_Centro);
 
-    if (!zona) {
-      return next(new AppError('Zona no encontrada', 404));
-    }
+  if (!zona) {
+    return next(new AppError('Zona no encontrada', 404));
+  }
 
-    res.json(zona);
-  });
+  res.json(zona);
+});
+// POST /zonas
+createZona = catchAsync(async (req, res) => {
+  const newZona = await zonasService.createZona(
+    req.body,
+    req.user.ID_Centro
+  );
+  res.status(201).json(newZona);
+});
+// PUT /zonas/:id
+updateZona = catchAsync(async (req, res, next) => {
+  const id = Number(req.params.id);
 
-  // POST /zonas
-  createZona = catchAsync(async (req, res) => {
-    const newZona = await zonasService.createZona(req.body);
-    res.status(201).json(newZona);
-  });
+  if (!Number.isInteger(id)) {
+    return next(new AppError('ID de zona inválido', 400));
+  }
 
-  // PUT /zonas/:id
-  updateZona = catchAsync(async (req, res, next) => {
-    const id = Number(req.params.id);
+  const updatedZona = await zonasService.updateZona(
+    id,
+    req.body,
+    req.user.ID_Centro
+  );
 
-    if (!Number.isInteger(id)) {
-      return next(new AppError('ID de zona inválido', 400));
-    }
+  if (!updatedZona) {
+    return next(new AppError('Zona no encontrada', 404));
+  }
 
-    const updatedZona = await zonasService.updateZona(id, req.body);
+  res.json(updatedZona);
+});
 
-    if (!updatedZona) {
-      return next(new AppError('Zona no encontrada', 404));
-    }
+// DELETE /zonas/:id
+deleteZona = catchAsync(async (req, res, next) => {
+  const id = Number(req.params.id);
 
-    res.json(updatedZona);
-  });
+  if (!Number.isInteger(id)) {
+    return next(new AppError('ID de zona inválido', 400));
+  }
 
-  // DELETE /zonas/:id
-  deleteZona = catchAsync(async (req, res, next) => {
-    const id = Number(req.params.id);
+  const deleted = await zonasService.deleteZona(
+    id,
+    req.user.ID_Centro
+  );
 
-    if (!Number.isInteger(id)) {
-      return next(new AppError('ID de zona inválido', 400));
-    }
+  if (!deleted) {
+    return next(new AppError('Zona no encontrada', 404));
+  }
 
-    const deleted = await zonasService.deleteZona(id);
+  res.status(204).send();
+});
 
-    if (!deleted) {
-      return next(new AppError('Zona no encontrada', 404));
-    }
 
-    res.status(204).send();
-  });
 }
 
 module.exports = new ZonasController();
