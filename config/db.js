@@ -6,11 +6,11 @@ const config = {
     user: process.env.DB_USER,
     password: process.env.DB_PASSWORD,
     server: process.env.DB_SERVER,
-    instanceName: process.env.DB_INSTANCE || 'SQLEXPRESS',
     database: process.env.DB_DATABASE,
+    
     options: {
-        encrypt: false,
-        trustServerCertificate: true
+        encrypt: true,
+        trustServerCertificate: false
     },
     port: parseInt(process.env.DB_PORT, 10) || 1433 // Añadimos el port aquí, ya que lo tienes en el .env
 };
