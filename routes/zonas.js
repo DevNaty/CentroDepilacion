@@ -2,6 +2,9 @@
 const express = require('express');
 const zonasController = require('../controllers/zonasController');
 const router = express.Router();
+const authMiddleware = require('../src/middlewares/authMiddleware');
+
+
 
 /**
  * @swagger
@@ -9,7 +12,7 @@ const router = express.Router();
  *   name: Zonas
  *   description: Gestión de zonas de depilación
  */
-
+router.use(authMiddleware);
 /**
  * @swagger
  * /api/zonas:

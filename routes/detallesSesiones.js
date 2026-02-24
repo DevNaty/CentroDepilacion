@@ -3,6 +3,8 @@ const express = require('express');
 const detallesSesionesController = require('../controllers/detallesSesionesController');
 
 const router = express.Router();
+const authMiddleware = require('../src/middlewares/authMiddleware');
+const { route } = require('./auth');
 
 /**
  * @swagger
@@ -10,7 +12,7 @@ const router = express.Router();
  *   name: DetallesSesiones
  *   description: Gestión de detalles de sesiones
  */
-
+router.use(authMiddleware);
 
 /**
  * @swagger

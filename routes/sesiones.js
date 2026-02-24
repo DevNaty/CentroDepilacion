@@ -2,6 +2,9 @@
 const express = require('express');
 const sesionesController = require('../controllers/sesionesController');
 const router = express.Router();
+const authMiddleware = require('../src/middlewares/authMiddleware');
+
+
 
 /**
  * @swagger
@@ -9,7 +12,7 @@ const router = express.Router();
  *   name: Sesiones
  *   description: Gestión de sesiones de depilación
  */
-
+router.use(authMiddleware);
 /**
  * @swagger
  * /api/sesiones:

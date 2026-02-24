@@ -15,6 +15,8 @@ const zonasRoutes = require('./routes/zonas');
 const sesionesRoutes = require('./routes/sesiones');
 const detallesSesionesRoutes = require('./routes/detallesSesiones');
 const turnosRoutes = require('./routes/turnos');
+const authRoutes = require('./routes/auth');
+
 
 const app = express();
 
@@ -32,6 +34,7 @@ app.get('/', (req, res) =>
   res.send('API de Centro de Depilación funcionando!')
 );
 
+app.use('/api/auth', authRoutes);
 app.use('/api/clientes', clientesRoutes);
 app.use('/api/zonas', zonasRoutes);
 app.use('/api/sesiones', sesionesRoutes);

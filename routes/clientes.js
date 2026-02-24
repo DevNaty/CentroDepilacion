@@ -2,6 +2,7 @@
 const express = require('express');
 const clientesController = require('../controllers/clientesController');
 const router = express.Router();
+const authMiddleware = require('../src/middlewares/authMiddleware');
 
 /**
  * @swagger
@@ -10,6 +11,8 @@ const router = express.Router();
  *   description: Gestión de clientes
  */
 
+
+router.use(authMiddleware);
 /**
  * @swagger
  * /api/clientes:

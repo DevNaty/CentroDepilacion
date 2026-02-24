@@ -2,6 +2,7 @@
 const express = require('express');
 const turnosController = require('../controllers/turnosController');
 const router = express.Router();
+const authMiddleware = require('../src/middlewares/authMiddleware');
 
 /**
  * @swagger
@@ -9,7 +10,7 @@ const router = express.Router();
  *   name: Turnos
  *   description: Gestión de turnos del centro de depilación
  */
-
+router.use(authMiddleware);
 /**
  * @swagger
  * /api/turnos/vista:
