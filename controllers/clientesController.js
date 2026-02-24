@@ -7,6 +7,7 @@ class ClientesController {
   // 🔍 Buscar clientes
   buscarClientes = catchAsync(async (req, res, next) => {
     const { q } = req.query;
+    const idCentro = req.user.idCentro;
 
     if (!q || q.trim().length < 2) {
       return next(
@@ -14,31 +15,32 @@ class ClientesController {
       );
     }
 
-    const clientes = await clientesService.buscarClientes(q.trim());
+    const clientes = await clientesService.buscarClientes(q.trim(), idCentro);
     res.json(clientes);
   });
 
-  // 📋 Obtener todos los clientes
+  // 📋 Obtener todos
   getAllClientes = catchAsync(async (req, res) => {
-    const clientes = await clientesService.getAllClientes();
+    const clientes = await clientesService.getAllClientes(req.user.idCentro);
     res.json(clientes);
   });
 
   // 📊 Listado con última sesión
   getClientesListado = catchAsync(async (req, res) => {
-    const clientes = await clientesService.getClientesConUltimaSesion();
+    const clientes = await clientesService.getClientesConUltimaSesion(req.user.idCentro);
     res.json(clientes);
   });
 
-  // 👤 Obtener cliente por ID
+  // 👤 Obtener por ID
   getClienteById = catchAsync(async (req, res, next) => {
     const id = Number(req.params.id);
+    const idCentro = req.user.idCentro;
 
     if (!Number.isInteger(id)) {
       return next(new AppError('ID de cliente inválido', 400));
     }
 
-    const cliente = await clientesService.getClienteById(id);
+    const cliente = await clientesService.getClienteById(id, idCentro);
 
     if (!cliente) {
       return next(new AppError('Cliente no encontrado', 404));
@@ -47,21 +49,32 @@ class ClientesController {
     res.json(cliente);
   });
 
-  // ➕ Crear cliente
+  // ➕ Crear
   createCliente = catchAsync(async (req, res) => {
-    const newCliente = await clientesService.createCliente(req.body);
+    const idCentro = req.user.idCentro;
+
+    const newCliente = await clientesService.createCliente({
+      ...req.body,
+      idCentro
+    });
+
     res.status(201).json(newCliente);
   });
 
-  // ✏️ Actualizar cliente
+  // ✏️ Actualizar
   updateCliente = catchAsync(async (req, res, next) => {
     const id = Number(req.params.id);
+    const idCentro = req.user.idCentro;
 
     if (!Number.isInteger(id)) {
       return next(new AppError('ID de cliente inválido', 400));
     }
 
-    const clienteActualizado = await clientesService.updateCliente(id, req.body);
+    const clienteActualizado = await clientesService.updateCliente(
+      id,
+      { ...req.body },
+      idCentro
+    );
 
     if (!clienteActualizado) {
       return next(new AppError('Cliente no encontrado', 404));
@@ -70,15 +83,16 @@ class ClientesController {
     res.json(clienteActualizado);
   });
 
-  // 🗑️ Eliminar cliente
+  // 🗑️ Eliminar
   deleteCliente = catchAsync(async (req, res, next) => {
     const id = Number(req.params.id);
+    const idCentro = req.user.idCentro;
 
     if (!Number.isInteger(id)) {
       return next(new AppError('ID de cliente inválido', 400));
     }
 
-    const eliminado = await clientesService.deleteCliente(id);
+    const eliminado = await clientesService.deleteCliente(id, idCentro);
 
     if (!eliminado) {
       return next(new AppError('Cliente no encontrado', 404));
@@ -87,15 +101,16 @@ class ClientesController {
     res.status(204).send();
   });
 
-  // 📚 Historial de sesiones del cliente
+  // 📚 Historial
   getHistorialSesiones = catchAsync(async (req, res, next) => {
     const id = Number(req.params.id);
+    const idCentro = req.user.idCentro;
 
     if (!Number.isInteger(id)) {
       return next(new AppError('ID de cliente inválido', 400));
     }
 
-    const sesiones = await clientesService.getHistorialSesiones(id);
+    const sesiones = await clientesService.getHistorialSesiones(id, idCentro);
     res.json(sesiones);
   });
 
