@@ -1,31 +1,28 @@
-// controllers/turnosController.js
-const turnosService = require('../services/turnosService');
+ const turnosService = require('../services/turnosService');
 const catchAsync = require('../src/utils/catchAsync');
 const AppError = require('../src/appError');
 
 class TurnosController {
 
-  // GET /turnos
   getAllTurnos = catchAsync(async (req, res) => {
-    const turnos = await turnosService.getAllTurnos();
+    const turnos = await turnosService.getAllTurnos(req.user.idCentro);
     res.json(turnos);
   });
 
-  // GET /turnos/vista
   getTurnosVista = catchAsync(async (req, res) => {
-    const turnos = await turnosService.getTurnosVista();
+    const turnos = await turnosService.getTurnosVista(req.user.idCentro);
     res.json(turnos);
   });
 
-  // GET /turnos/:id
   getTurnoById = catchAsync(async (req, res, next) => {
     const id = Number(req.params.id);
+    const idCentro = req.user.idCentro;
 
     if (!Number.isInteger(id)) {
       return next(new AppError('ID de turno inválido', 400));
     }
 
-    const turno = await turnosService.getTurnoById(id);
+    const turno = await turnosService.getTurnoById(id, idCentro);
 
     if (!turno) {
       return next(new AppError('Turno no encontrado', 404));
@@ -34,15 +31,15 @@ class TurnosController {
     res.json(turno);
   });
 
-  // GET /turnos/:id/vista
   getTurnoByIdVista = catchAsync(async (req, res, next) => {
     const id = Number(req.params.id);
+    const idCentro = req.user.idCentro;
 
     if (!Number.isInteger(id)) {
       return next(new AppError('ID de turno inválido', 400));
     }
 
-    const turno = await turnosService.getTurnoByIdVista(id);
+    const turno = await turnosService.getTurnoByIdVista(id, idCentro);
 
     if (!turno) {
       return next(new AppError('Turno no encontrado', 404));
@@ -51,21 +48,29 @@ class TurnosController {
     res.json(turno);
   });
 
-  // POST /turnos
-  createTurno = catchAsync(async (req, res) => {
-    const newTurno = await turnosService.createTurno(req.body);
+  createTurno = catchAsync(async (req, res, next) => {
+    const idCentro = req.user.idCentro;
+
+    const newTurno =
+      await turnosService.createTurno(req.body, idCentro);
+
+    if (!newTurno) {
+      return next(new AppError('Cliente no pertenece al centro', 400));
+    }
+
     res.status(201).json(newTurno);
   });
 
-  // PUT /turnos/:id
   updateTurno = catchAsync(async (req, res, next) => {
     const id = Number(req.params.id);
+    const idCentro = req.user.idCentro;
 
     if (!Number.isInteger(id)) {
       return next(new AppError('ID de turno inválido', 400));
     }
 
-    const turno = await turnosService.updateTurno(id, req.body);
+    const turno =
+      await turnosService.updateTurno(id, req.body, idCentro);
 
     if (!turno) {
       return next(new AppError('Turno no encontrado', 404));
@@ -74,15 +79,16 @@ class TurnosController {
     res.json(turno);
   });
 
-  // DELETE /turnos/:id
   deleteTurno = catchAsync(async (req, res, next) => {
     const id = Number(req.params.id);
+    const idCentro = req.user.idCentro;
 
     if (!Number.isInteger(id)) {
       return next(new AppError('ID de turno inválido', 400));
     }
 
-    const deleted = await turnosService.deleteTurno(id);
+    const deleted =
+      await turnosService.deleteTurno(id, idCentro);
 
     if (!deleted) {
       return next(new AppError('Turno no encontrado', 404));
