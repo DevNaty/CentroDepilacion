@@ -2,78 +2,98 @@ const { sql } = require('../config/db');
 
 class SesionesService {
 
-  async getAllSesiones() {
-    try {
-      const result = await sql.query('SELECT * FROM Sesiones');
-      return result.recordset;
-    } catch (err) {
-      throw new Error(`Error al obtener sesiones: ${err.message}`);
-    }
+  async getAllSesiones(idCentro) {
+    const request = new sql.Request();
+    request.input('ID_Centro', sql.Int, idCentro);
+
+    const result = await request.query(`
+      SELECT *
+      FROM Sesiones
+      WHERE ID_Centro = @ID_Centro
+    `);
+
+    return result.recordset;
   }
 
-  async getSesionesById(id) {
-    try {
-      const request = new sql.Request();
-      request.input('ID_Sesion', sql.Int, id);
+  async getSesionesById(id, idCentro) {
+    const request = new sql.Request();
+    request.input('ID_Sesion', sql.Int, id);
+    request.input('ID_Centro', sql.Int, idCentro);
 
-      const result = await request.query(`
-        SELECT * FROM Sesiones WHERE ID_Sesion = @ID_Sesion
-      `);
+    const result = await request.query(`
+      SELECT *
+      FROM Sesiones
+      WHERE ID_Sesion = @ID_Sesion
+        AND ID_Centro = @ID_Centro
+    `);
 
-      return result.recordset[0];
-    } catch (err) {
-      throw new Error(`Error al obtener sesión con ID ${id}: ${err.message}`);
-    }
+    return result.recordset[0] || null;
   }
 
-  async createSesion(sesion) {
-    try {
-      const { ID_Cliente, Notas, Fecha } = sesion;
+  async createSesion(data, idCentro) {
+    const { ID_Cliente, Notas, Fecha } = data;
 
-      const request = new sql.Request();
-      request.input('ID_Cliente', sql.Int, ID_Cliente);
-      request.input('Notas', sql.VarChar, Notas || null);
-      request.input('Fecha', sql.Date, Fecha);
+    const request = new sql.Request();
+    request.input('ID_Cliente', sql.Int, ID_Cliente);
+    request.input('ID_Centro', sql.Int, idCentro);
 
-      const result = await request.query(`
-        INSERT INTO Sesiones (ID_Cliente, Notas, Fecha)
-        VALUES (@ID_Cliente, @Notas, @Fecha);
-        SELECT SCOPE_IDENTITY() AS ID_Sesion;
-      `);
+    // 🔒 Validar cliente pertenece al centro
+    const validacion = await request.query(`
+      SELECT ID_Cliente
+      FROM Clientes
+      WHERE ID_Cliente = @ID_Cliente
+        AND ID_Centro = @ID_Centro
+    `);
 
-      return { ID_Sesion: result.recordset[0].ID_Sesion, ...sesion };
-    } catch (err) {
-      throw new Error(`Error al crear sesión: ${err.message}`);
+    if (validacion.recordset.length === 0) {
+      return null;
     }
+
+    request.input('Notas', sql.VarChar, Notas || null);
+    request.input('Fecha', sql.Date, Fecha);
+
+    const result = await request.query(`
+      INSERT INTO Sesiones (ID_Cliente, Notas, Fecha, ID_Centro)
+      VALUES (@ID_Cliente, @Notas, @Fecha, @ID_Centro);
+      SELECT SCOPE_IDENTITY() AS ID_Sesion;
+    `);
+
+    return { ID_Sesion: result.recordset[0].ID_Sesion, ...data };
   }
 
-  async createSesionCompleta(data) {
+  async createSesionCompleta(data, idCentro) {
     const pool = await sql.connect();
     const transaction = new sql.Transaction(pool);
 
     const { ID_Cliente, Fecha, Detalles } = data;
 
-    if (!Array.isArray(Detalles) || Detalles.length === 0) {
-      throw new Error('La sesión debe tener al menos una zona');
-    }
+    await transaction.begin();
 
     try {
-      await transaction.begin();
-
-      // Crear sesión
       const sesionRequest = new sql.Request(transaction);
       sesionRequest.input('ID_Cliente', sql.Int, ID_Cliente);
+      sesionRequest.input('ID_Centro', sql.Int, idCentro);
       sesionRequest.input('Fecha', sql.Date, Fecha);
 
+      const validacion = await sesionRequest.query(`
+        SELECT ID_Cliente
+        FROM Clientes
+        WHERE ID_Cliente = @ID_Cliente
+          AND ID_Centro = @ID_Centro
+      `);
+
+      if (validacion.recordset.length === 0) {
+        throw new Error('Cliente no pertenece al centro');
+      }
+
       const sesionResult = await sesionRequest.query(`
-        INSERT INTO Sesiones (ID_Cliente, Fecha)
-        VALUES (@ID_Cliente, @Fecha);
+        INSERT INTO Sesiones (ID_Cliente, Fecha, ID_Centro)
+        VALUES (@ID_Cliente, @Fecha, @ID_Centro);
         SELECT SCOPE_IDENTITY() AS ID_Sesion;
       `);
 
       const ID_Sesion = sesionResult.recordset[0].ID_Sesion;
 
-      // Crear detalles
       for (const detalle of Detalles) {
         const detalleRequest = new sql.Request(transaction);
         detalleRequest.input('ID_Sesion', sql.Int, ID_Sesion);
@@ -93,85 +113,80 @@ class SesionesService {
 
     } catch (err) {
       await transaction.rollback();
-      throw new Error(`Error al crear sesión completa: ${err.message}`);
+      throw err;
     }
   }
 
-  async updateSesiones(id, sesion) {
-    try {
-      const { ID_Cliente, Notas, Fecha } = sesion;
+  async updateSesiones(id, data, idCentro) {
+    const { ID_Cliente, Notas, Fecha } = data;
 
-      const request = new sql.Request();
-      request.input('ID_Sesion', sql.Int, id);
-      request.input('ID_Cliente', sql.Int, ID_Cliente);
-      request.input('Notas', sql.VarChar, Notas || null);
-      request.input('Fecha', sql.Date, Fecha);
+    const request = new sql.Request();
+    request.input('ID_Sesion', sql.Int, id);
+    request.input('ID_Centro', sql.Int, idCentro);
+    request.input('ID_Cliente', sql.Int, ID_Cliente);
+    request.input('Notas', sql.VarChar, Notas || null);
+    request.input('Fecha', sql.Date, Fecha);
 
-      const result = await request.query(`
-        UPDATE Sesiones
-        SET ID_Cliente = @ID_Cliente,
-            Notas = @Notas,
-            Fecha = @Fecha
-        WHERE ID_Sesion = @ID_Sesion;
-      `);
+    const result = await request.query(`
+      UPDATE Sesiones
+      SET ID_Cliente = @ID_Cliente,
+          Notas = @Notas,
+          Fecha = @Fecha
+      WHERE ID_Sesion = @ID_Sesion
+        AND ID_Centro = @ID_Centro
+    `);
 
-      if (result.rowsAffected[0] === 0) return null;
+    if (result.rowsAffected[0] === 0) return null;
 
-      return { ID_Sesion: id, ...sesion };
-    } catch (err) {
-      throw new Error(`Error al actualizar sesión con ID ${id}: ${err.message}`);
-    }
+    return { ID_Sesion: id, ...data };
   }
 
-  async deleteSesiones(id) {
-    try {
-      const request = new sql.Request();
-      request.input('ID_Sesion', sql.Int, id);
+  async deleteSesiones(id, idCentro) {
+    const request = new sql.Request();
+    request.input('ID_Sesion', sql.Int, id);
+    request.input('ID_Centro', sql.Int, idCentro);
 
-      const result = await request.query(`
-        DELETE FROM Sesiones WHERE ID_Sesion = @ID_Sesion
-      `);
+    const result = await request.query(`
+      DELETE FROM Sesiones
+      WHERE ID_Sesion = @ID_Sesion
+        AND ID_Centro = @ID_Centro
+    `);
 
-      return result.rowsAffected[0] > 0;
-    } catch (err) {
-      throw new Error(`Error al eliminar sesión con ID ${id}: ${err.message}`);
-    }
+    return result.rowsAffected[0] > 0;
   }
 
-  async getDetalleSesion(idSesion) {
-    try {
-      const request = new sql.Request();
-      request.input('ID_Sesion', sql.Int, idSesion);
+  async getDetalleSesion(idSesion, idCentro) {
+    const request = new sql.Request();
+    request.input('ID_Sesion', sql.Int, idSesion);
+    request.input('ID_Centro', sql.Int, idCentro);
 
-      const result = await request.query(`
-        SELECT 
-          s.ID_Sesion,
-          s.Fecha,
-          z.ID_Zona,
-          z.Nombre_Zona,
-          ds.Potencia,
-          ds.Notas
-        FROM Sesiones s
-        INNER JOIN DetallesSesiones ds ON s.ID_Sesion = ds.ID_Sesion
-        INNER JOIN Zonas z ON ds.ID_Zona = z.ID_Zona
-        WHERE s.ID_Sesion = @ID_Sesion
-      `);
+    const result = await request.query(`
+      SELECT 
+        s.ID_Sesion,
+        s.Fecha,
+        z.ID_Zona,
+        z.Nombre_Zona,
+        ds.Potencia,
+        ds.Notas
+      FROM Sesiones s
+      INNER JOIN DetallesSesiones ds ON s.ID_Sesion = ds.ID_Sesion
+      INNER JOIN Zonas z ON ds.ID_Zona = z.ID_Zona
+      WHERE s.ID_Sesion = @ID_Sesion
+        AND s.ID_Centro = @ID_Centro
+    `);
 
-      if (result.recordset.length === 0) return null;
+    if (result.recordset.length === 0) return null;
 
-      return {
-        ID_Sesion: result.recordset[0].ID_Sesion,
-        Fecha: result.recordset[0].Fecha,
-        Zonas: result.recordset.map(row => ({
-          ID_Zona: row.ID_Zona,
-          Nombre_Zona: row.Nombre_Zona,
-          Potencia: row.Potencia,
-          Notas: row.Notas
-        }))
-      };
-    } catch (err) {
-      throw new Error(`Error al obtener detalle de sesión: ${err.message}`);
-    }
+    return {
+      ID_Sesion: result.recordset[0].ID_Sesion,
+      Fecha: result.recordset[0].Fecha,
+      Zonas: result.recordset.map(row => ({
+        ID_Zona: row.ID_Zona,
+        Nombre_Zona: row.Nombre_Zona,
+        Potencia: row.Potencia,
+        Notas: row.Notas
+      }))
+    };
   }
 }
 
