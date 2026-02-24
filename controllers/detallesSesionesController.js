@@ -1,25 +1,25 @@
-// controllers/detallesSesionesController.js
 const detallesSesionesService = require('../services/detallesSesionesService');
 const catchAsync = require('../src/utils/catchAsync');
 const AppError = require('../src/appError');
 
 class DetallesSesionesController {
 
-  // GET /detalles-sesiones
   getAllDetallesSesiones = catchAsync(async (req, res) => {
-    const detalles = await detallesSesionesService.getAllDetallesSesiones();
+    const detalles = await detallesSesionesService.getAllDetallesSesiones(
+      req.user.idCentro
+    );
     res.json(detalles);
   });
 
-  // GET /detalles-sesiones/:id
   getDetallesSesionesById = catchAsync(async (req, res, next) => {
     const id = Number(req.params.id);
+    const idCentro = req.user.idCentro;
 
     if (!Number.isInteger(id)) {
       return next(new AppError('ID de detalle de sesión inválido', 400));
     }
 
-    const detalle = await detallesSesionesService.getDetallesSesionesById(id);
+    const detalle = await detallesSesionesService.getDetalleSesionById(id, idCentro);
 
     if (!detalle) {
       return next(new AppError('Detalle de sesión no encontrado', 404));
@@ -28,36 +28,46 @@ class DetallesSesionesController {
     res.json(detalle);
   });
 
-  // GET /detalles-sesiones/sesion/:idSesion
-getDetallesBySesion = catchAsync(async (req, res, next) => {
-  const idSesion = Number(req.params.idSesion);
+  getDetallesBySesion = catchAsync(async (req, res, next) => {
+    const idSesion = Number(req.params.idSesion);
+    const idCentro = req.user.idCentro;
 
-  if (!Number.isInteger(idSesion)) {
-    return next(new AppError('ID de sesión inválido', 400));
-  }
+    if (!Number.isInteger(idSesion)) {
+      return next(new AppError('ID de sesión inválido', 400));
+    }
 
-  const detalles =
-    await detallesSesionesService.getDetallesBySesion(idSesion);
+    const detalles =
+      await detallesSesionesService.getDetallesBySesion(idSesion, idCentro);
 
-  res.json(detalles);
-});
+    res.json(detalles);
+  });
 
+  createDetallesSesiones = catchAsync(async (req, res, next) => {
+    const idCentro = req.user.idCentro;
 
-  // POST /detalles-sesiones
-  createDetallesSesiones = catchAsync(async (req, res) => {
-    const nuevoDetalle = await detallesSesionesService.createDetallesSesiones(req.body);
+    const nuevoDetalle =
+      await detallesSesionesService.createDetalleSesion(
+        req.body,
+        idCentro
+      );
+
     res.status(201).json(nuevoDetalle);
   });
 
-  // PUT /detalles-sesiones/:id
   updateDetallesSesiones = catchAsync(async (req, res, next) => {
     const id = Number(req.params.id);
+    const idCentro = req.user.idCentro;
 
     if (!Number.isInteger(id)) {
       return next(new AppError('ID de detalle de sesión inválido', 400));
     }
 
-    const detalleActualizado = await detallesSesionesService.updateDetallesSesiones(id, req.body);
+    const detalleActualizado =
+      await detallesSesionesService.updateDetalleSesion(
+        id,
+        req.body,
+        idCentro
+      );
 
     if (!detalleActualizado) {
       return next(new AppError('Detalle de sesión no encontrado', 404));
@@ -66,15 +76,16 @@ getDetallesBySesion = catchAsync(async (req, res, next) => {
     res.json(detalleActualizado);
   });
 
-  // DELETE /detalles-sesiones/:id
   deleteDetallesSesiones = catchAsync(async (req, res, next) => {
     const id = Number(req.params.id);
+    const idCentro = req.user.idCentro;
 
     if (!Number.isInteger(id)) {
       return next(new AppError('ID de detalle de sesión inválido', 400));
     }
 
-    const eliminado = await detallesSesionesService.deleteDetallesSesiones(id);
+    const eliminado =
+      await detallesSesionesService.deleteDetalleSesion(id, idCentro);
 
     if (!eliminado) {
       return next(new AppError('Detalle de sesión no encontrado', 404));
