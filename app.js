@@ -1,4 +1,4 @@
-// app.js
+const cors = require("cors");
 const express = require('express');
 const { connectDB } = require('./config/db');
 require('dotenv').config();
@@ -17,23 +17,35 @@ const detallesSesionesRoutes = require('./routes/detallesSesiones');
 const turnosRoutes = require('./routes/turnos');
 const authRoutes = require('./routes/auth');
 
-
 const app = express();
 
-// 1️⃣ Middlewares globales
+
+// 🔥 1️⃣ CORS PRIMERO
+app.use(
+  cors({
+    origin: [
+      "http://localhost:5173",
+      "http://localhost:3000",
+    ],
+    credentials: true,
+  })
+);
+
+// 🔥 2️⃣ JSON
 app.use(express.json());
 
-// 2️⃣ Swagger (ANTES del 404)
+// Swagger
 app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
-// 3️⃣ DB
+// DB
 connectDB();
 
-// 4️⃣ Rutas
+// Test
 app.get('/', (req, res) =>
   res.send('API de Centro de Depilación funcionando!')
 );
 
+// Rutas
 app.use('/api/auth', authRoutes);
 app.use('/api/clientes', clientesRoutes);
 app.use('/api/zonas', zonasRoutes);
@@ -41,19 +53,15 @@ app.use('/api/sesiones', sesionesRoutes);
 app.use('/api/detallesSesiones', detallesSesionesRoutes);
 app.use('/api/turnos', turnosRoutes);
 
-// 5️⃣ 404 GLOBAL (Express 5 ✔)
+// 404
 app.use((req, res, next) => {
   next(new AppError(`No se encontró ${req.originalUrl} en este servidor`, 404));
 });
 
-// 6️⃣ Error handler
+// Error handler
 app.use(errorMiddleware);
 
-// 7️⃣ Server
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`Servidor escuchando en el puerto ${PORT}`);
 });
-setInterval(() => {
-  // mantiene vivo el event loop
-}, 1000);
