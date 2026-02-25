@@ -38,8 +38,44 @@ class ZonasService {
       throw new Error(`Error al obtener zona con ID ${id}: ${err.message}`);
     }
   }
+async createZona(zona, idCentro) {
+  try {
+    const { Nombre_Zona, TiempoMinutos, Precio } = zona;
 
-  async createZona(zona, idCentro) {
+    // 👇 convertir minutos a formato HH:MM:SS
+    const horas = Math.floor(TiempoMinutos / 60);
+    const minutos = TiempoMinutos % 60;
+    const tiempoFormateado = `${horas.toString().padStart(2, '0')}:${minutos
+      .toString()
+      .padStart(2, '0')}:00`;
+
+    const request = new sql.Request();
+    request.input('Nombre_Zona', sql.NVarChar, Nombre_Zona);
+    request.input('ID_Centro', sql.Int, idCentro);
+    request.input('Tiempo', sql.Time, tiempoFormateado);
+    request.input('TiempoMinutos', sql.Int, TiempoMinutos);
+    request.input('Precio', sql.Decimal(10, 2), Precio);
+
+    const result = await request.query(`
+      INSERT INTO Zonas (Nombre_Zona, ID_Centro, Tiempo, TiempoMinutos, Precio)
+      VALUES (@Nombre_Zona, @ID_Centro, @Tiempo, @TiempoMinutos, @Precio);
+
+      SELECT SCOPE_IDENTITY() AS ID_Zona;
+    `);
+
+    return {
+      ID_Zona: result.recordset[0].ID_Zona,
+      Nombre_Zona,
+      Tiempo: tiempoFormateado,
+      TiempoMinutos,
+      Precio
+    };
+
+  } catch (err) {
+    throw new Error(`Error al crear zona: ${err.message}`);
+  }
+}
+ /* async createZona(zona, idCentro) {
     try {
       const { Nombre_Zona, Tiempo, TiempoMinutos, Precio } = zona;
 
@@ -68,7 +104,7 @@ class ZonasService {
     } catch (err) {
       throw new Error(`Error al crear zona: ${err.message}`);
     }
-  }
+  }*/
 
   async updateZona(id, zona, idCentro) {
     try {

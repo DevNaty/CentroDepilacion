@@ -28,13 +28,27 @@ getZonaById = catchAsync(async (req, res, next) => {
   res.json(zona);
 });
 // POST /zonas
-createZona = catchAsync(async (req, res) => {
+createZona = catchAsync(async (req, res, next) => {
+
+  const idCentro = req.user.idCentro; // 👈 del JWT
+
+  if (!idCentro) {
+    return next(new AppError('Centro no definido en el token', 400));
+  }
+
+  const newZona = await zonasService.createZona(req.body, idCentro);
+
+  res.status(201).json(newZona);
+});
+
+
+/*createZona = catchAsync(async (req, res) => {
   const newZona = await zonasService.createZona(
     req.body,
     req.user.ID_Centro
   );
   res.status(201).json(newZona);
-});
+});*/
 // PUT /zonas/:id
 updateZona = catchAsync(async (req, res, next) => {
   const id = Number(req.params.id);
