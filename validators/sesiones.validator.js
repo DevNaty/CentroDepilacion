@@ -2,9 +2,9 @@
 function validarCrearSesion(body) {
   const errores = [];
 
-  const { ID_Cliente, Fecha, Zonas } = body;
+  const { ID_Cliente, Fecha, Detalles } = body;
 
-  // ID_Cliente
+  // ✅ ID_Cliente
   if (
     ID_Cliente === undefined ||
     ID_Cliente === null ||
@@ -13,41 +13,52 @@ function validarCrearSesion(body) {
     errores.push("ID_Cliente es obligatorio y debe ser un número entero");
   }
 
-  // Fecha
+  // ✅ Fecha
   if (
     !Fecha ||
     typeof Fecha !== "string" ||
     isNaN(Date.parse(Fecha))
   ) {
-    errores.push("Fecha es obligatoria y debe tener un formato válido (YYYY-MM-DD)");
+    errores.push("Fecha es obligatoria y debe tener formato válido (YYYY-MM-DD)");
   }
 
-  // Zonas
-  if (!Array.isArray(Zonas) || Zonas.length === 0) {
-    errores.push("Zonas debe ser un array con al menos una zona");
+  // ✅ Detalles
+  if (!Array.isArray(Detalles) || Detalles.length === 0) {
+    errores.push("Detalles debe ser un array con al menos un detalle");
   } else {
-    Zonas.forEach((zona, index) => {
+    Detalles.forEach((detalle, index) => {
+
       // ID_Zona
       if (
-        zona.ID_Zona === undefined ||
-        zona.ID_Zona === null ||
-        !Number.isInteger(Number(zona.ID_Zona))
+        detalle.ID_Zona === undefined ||
+        detalle.ID_Zona === null ||
+        !Number.isInteger(Number(detalle.ID_Zona))
       ) {
-        errores.push(`Zona #${index + 1}: ID_Zona es obligatorio y debe ser un número entero`);
+        errores.push(
+          `Detalle #${index + 1}: ID_Zona es obligatorio y debe ser un número entero`
+        );
       }
 
-      // Potencia
+      // Potencia (ahora como string, porque tu SQL usa VarChar)
       if (
-        zona.Potencia === undefined ||
-        typeof zona.Potencia !== "number" ||
-        zona.Potencia <= 0
+        detalle.Potencia === undefined ||
+        typeof detalle.Potencia !== "string" ||
+        detalle.Potencia.trim() === ""
       ) {
-        errores.push(`Zona #${index + 1}: Potencia debe ser un número mayor a 0`);
+        errores.push(
+          `Detalle #${index + 1}: Potencia es obligatoria y debe ser texto`
+        );
       }
 
-      // Notas
-      if (zona.Notas !== undefined && typeof zona.Notas !== "string") {
-        errores.push(`Zona #${index + 1}: Notas debe ser texto`);
+      // Notas (opcional)
+      if (
+        detalle.Notas !== undefined &&
+        detalle.Notas !== null &&
+        typeof detalle.Notas !== "string"
+      ) {
+        errores.push(
+          `Detalle #${index + 1}: Notas debe ser texto`
+        );
       }
     });
   }

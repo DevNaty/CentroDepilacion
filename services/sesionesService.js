@@ -93,7 +93,8 @@ class SesionesService {
       `);
 
       const ID_Sesion = sesionResult.recordset[0].ID_Sesion;
-
+          console.log("Detalles:", Detalles);
+          console.log("Es array?", Array.isArray(Detalles));
       for (const detalle of Detalles) {
         const detalleRequest = new sql.Request(transaction);
         detalleRequest.input('ID_Sesion', sql.Int, ID_Sesion);
