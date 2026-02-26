@@ -42,17 +42,21 @@ async createZona(zona, idCentro) {
   try {
     const { Nombre_Zona, TiempoMinutos, Precio } = zona;
 
-    // 👇 convertir minutos a formato HH:MM:SS
     const horas = Math.floor(TiempoMinutos / 60);
     const minutos = TiempoMinutos % 60;
-    const tiempoFormateado = `${horas.toString().padStart(2, '0')}:${minutos
+
+    const tiempoFormateado = `${horas
+      .toString()
+      .padStart(2, '0')}:${minutos
       .toString()
       .padStart(2, '0')}:00`;
+
+    const tiempoDate = new Date(`1970-01-01T${tiempoFormateado}`);
 
     const request = new sql.Request();
     request.input('Nombre_Zona', sql.NVarChar, Nombre_Zona);
     request.input('ID_Centro', sql.Int, idCentro);
-    request.input('Tiempo', sql.Time, tiempoFormateado);
+    request.input('Tiempo', sql.Time, tiempoDate);
     request.input('TiempoMinutos', sql.Int, TiempoMinutos);
     request.input('Precio', sql.Decimal(10, 2), Precio);
 

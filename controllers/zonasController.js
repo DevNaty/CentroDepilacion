@@ -7,7 +7,7 @@ class ZonasController {
 
   // GET /zonas
 getAllZonas = catchAsync(async (req, res) => {
-  const zonas = await zonasService.getAllZonas(req.user.ID_Centro);
+  const zonas = await zonasService.getAllZonas(req.user.idCentro);
   res.json(zonas);
 });
 
@@ -19,7 +19,7 @@ getZonaById = catchAsync(async (req, res, next) => {
     return next(new AppError('ID de zona inválido', 400));
   }
 
-  const zona = await zonasService.getZonaById(id, req.user.ID_Centro);
+  const zona = await zonasService.getZonaById(id, req.user.idCentro);
 
   if (!zona) {
     return next(new AppError('Zona no encontrada', 404));
@@ -45,7 +45,7 @@ createZona = catchAsync(async (req, res, next) => {
 /*createZona = catchAsync(async (req, res) => {
   const newZona = await zonasService.createZona(
     req.body,
-    req.user.ID_Centro
+    req.user.idCentro
   );
   res.status(201).json(newZona);
 });*/
@@ -60,7 +60,7 @@ updateZona = catchAsync(async (req, res, next) => {
   const updatedZona = await zonasService.updateZona(
     id,
     req.body,
-    req.user.ID_Centro
+    req.user.idCentro
   );
 
   if (!updatedZona) {
@@ -80,7 +80,7 @@ deleteZona = catchAsync(async (req, res, next) => {
 
   const deleted = await zonasService.deleteZona(
     id,
-    req.user.ID_Centro
+    req.user.idCentro
   );
 
   if (!deleted) {
