@@ -1,4 +1,4 @@
-const { formatDateTime } = require('../utils/dateFormatter');
+const { formatDate } = require('../utils/dateFormatter');
 
 function formatDatesInObject(obj) {
   if (!obj || typeof obj !== 'object') return obj;
@@ -7,7 +7,7 @@ function formatDatesInObject(obj) {
     const value = obj[key];
 
     if (value instanceof Date) {
-      obj[key] = formatDateTime(value);
+      obj[key] = formatDate(value);
     } else if (Array.isArray(value)) {
       value.forEach(item => formatDatesInObject(item));
     } else if (typeof value === 'object') {
