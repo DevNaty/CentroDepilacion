@@ -38,32 +38,26 @@ class ZonasService {
       throw new Error(`Error al obtener zona con ID ${id}: ${err.message}`);
     }
   }
-async createZona(zona, idCentro) {
+
+  async createZona(zona, idCentro) {
   try {
     const { Nombre_Zona, TiempoMinutos, Precio } = zona;
 
     const horas = Math.floor(TiempoMinutos / 60);
     const minutos = TiempoMinutos % 60;
 
-    const tiempoFormateado = `${horas
-      .toString()
-      .padStart(2, '0')}:${minutos
-      .toString()
-      .padStart(2, '0')}:00`;
-
-    const tiempoDate = new Date(`1970-01-01T${tiempoFormateado}`);
+    const tiempoFormateado = `${horas.toString().padStart(2,'0')}:${minutos.toString().padStart(2,'0')}:00`;
 
     const request = new sql.Request();
     request.input('Nombre_Zona', sql.NVarChar, Nombre_Zona);
     request.input('ID_Centro', sql.Int, idCentro);
-    request.input('Tiempo', sql.Time, tiempoDate);
+    request.input('Tiempo', sql.Time, timeToSqlDate(tiempoFormateado));
     request.input('TiempoMinutos', sql.Int, TiempoMinutos);
     request.input('Precio', sql.Decimal(10, 2), Precio);
 
     const result = await request.query(`
       INSERT INTO Zonas (Nombre_Zona, ID_Centro, Tiempo, TiempoMinutos, Precio)
       VALUES (@Nombre_Zona, @ID_Centro, @Tiempo, @TiempoMinutos, @Precio);
-
       SELECT SCOPE_IDENTITY() AS ID_Zona;
     `);
 
@@ -79,36 +73,6 @@ async createZona(zona, idCentro) {
     throw new Error(`Error al crear zona: ${err.message}`);
   }
 }
- /* async createZona(zona, idCentro) {
-    try {
-      const { Nombre_Zona, Tiempo, TiempoMinutos, Precio } = zona;
-
-      const request = new sql.Request();
-      request.input('Nombre_Zona', sql.NVarChar, Nombre_Zona);
-      request.input('ID_Centro', sql.Int, idCentro);
-      request.input('Tiempo', sql.Time, Tiempo);
-      request.input('TiempoMinutos', sql.Int, TiempoMinutos);
-      request.input('Precio', sql.Decimal(10, 2), Precio);
-
-      const result = await request.query(`
-        INSERT INTO Zonas (Nombre_Zona, ID_Centro, Tiempo, TiempoMinutos, Precio)
-        VALUES (@Nombre_Zona, @ID_Centro, @Tiempo, @TiempoMinutos, @Precio);
-
-        SELECT SCOPE_IDENTITY() AS ID_Zona;
-      `);
-
-      return {
-        ID_Zona: result.recordset[0].ID_Zona,
-        Nombre_Zona,
-        Tiempo,
-        TiempoMinutos,
-        Precio
-      };
-
-    } catch (err) {
-      throw new Error(`Error al crear zona: ${err.message}`);
-    }
-  }*/
 
   async updateZona(id, zona, idCentro) {
     try {

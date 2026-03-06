@@ -1,4 +1,4 @@
- const turnosService = require('../services/turnosService');
+const turnosService = require('../services/turnosService');
 const catchAsync = require('../src/utils/catchAsync');
 const AppError = require('../src/appError');
 
@@ -49,17 +49,34 @@ class TurnosController {
   });
 
   createTurno = catchAsync(async (req, res, next) => {
-    const idCentro = req.user.idCentro;
+  const idCentro = req.user.idCentro;
 
-    const newTurno =
-      await turnosService.createTurno(req.body, idCentro);
+  const { ID_Cliente, Fecha, HoraInicio, Zonas } = req.body;
 
-    if (!newTurno) {
-      return next(new AppError('Cliente no pertenece al centro', 400));
-    }
+  // 🔎 Validaciones básicas
+  if (!ID_Cliente || !Number.isInteger(Number(ID_Cliente))) {
+    return next(new AppError('ID_Cliente inválido', 400));
+  }
 
-    res.status(201).json(newTurno);
-  });
+  if (!Fecha || isNaN(Date.parse(Fecha))) {
+    return next(new AppError('Fecha inválida (YYYY-MM-DD)', 400));
+  }
+
+  if (!HoraInicio || typeof HoraInicio !== 'string') {
+    return next(new AppError('HoraInicio es obligatoria (HH:mm)', 400));
+  }
+
+  if (!Array.isArray(Zonas) || Zonas.length === 0) {
+    return next(new AppError('Debe seleccionar al menos una zona', 400));
+  }
+
+  const nuevoTurno =
+    await turnosService.createTurnoCompleto(req.body, idCentro);
+
+  res.status(201).json(nuevoTurno);
+});
+
+
 
   updateTurno = catchAsync(async (req, res, next) => {
     const id = Number(req.params.id);

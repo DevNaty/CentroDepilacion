@@ -1,35 +1,82 @@
 const { sql } = require('../config/db');
+const { formatDate } = require('../src/utils/dateFormatter');
 
 class SesionesService {
 
-  async getAllSesiones(idCentro) {
-    const request = new sql.Request();
-    request.input('ID_Centro', sql.Int, idCentro);
+async getAllSesiones(idCentro) {
+  const request = new sql.Request();
+  request.input('ID_Centro', sql.Int, idCentro);
 
-    const result = await request.query(`
-      SELECT *
-      FROM Sesiones
-      WHERE ID_Centro = @ID_Centro
-    `);
+  const result = await request.query(`
+    SELECT 
+      s.ID_Sesion,
+      s.Fecha,
+      c.ID_Cliente,
+      c.Nombre AS Nombre_Cliente,
+      c.Apellido AS Apellido_Cliente,
+      z.Nombre_Zona,
+      ds.Potencia,
+      ds.Notas
+    FROM Sesiones s
+    INNER JOIN Clientes c ON s.ID_Cliente = c.ID_Cliente
+    LEFT JOIN DetallesSesiones ds ON s.ID_Sesion = ds.ID_Sesion
+    LEFT JOIN Zonas z ON ds.ID_Zona = z.ID_Zona
+    WHERE s.ID_Centro = @ID_Centro
+    ORDER BY s.ID_Sesion DESC
+  `);
 
-    return result.recordset;
+  const sesionesMap = new Map();
+
+  for (const row of result.recordset) {
+
+    if (!sesionesMap.has(row.ID_Sesion)) {
+      sesionesMap.set(row.ID_Sesion, {
+        ID_Sesion: row.ID_Sesion,
+        Fecha: formatDate(row.Fecha),
+        Cliente: {
+          ID_Cliente: row.ID_Cliente,
+          Nombre: row.Nombre_Cliente
+        },
+        Zonas: []
+      });
+    }
+
+    if (row.Nombre_Zona) {
+      sesionesMap.get(row.ID_Sesion).Zonas.push({
+        Nombre_Zona: row.Nombre_Zona,
+        Potencia: row.Potencia,
+        Notas: row.Notas
+      });
+    }
   }
 
-  async getSesionesById(id, idCentro) {
-    const request = new sql.Request();
-    request.input('ID_Sesion', sql.Int, id);
-    request.input('ID_Centro', sql.Int, idCentro);
+  return Array.from(sesionesMap.values());
+}
 
-    const result = await request.query(`
-      SELECT *
-      FROM Sesiones
-      WHERE ID_Sesion = @ID_Sesion
-        AND ID_Centro = @ID_Centro
-    `);
+ async getSesionesById(id, idCentro) {
+  const request = new sql.Request();
+  request.input('ID_Sesion', sql.Int, id);
+  request.input('ID_Centro', sql.Int, idCentro);
 
-    return result.recordset[0] || null;
-  }
+  const result = await request.query(`
+    SELECT 
+      s.ID_Sesion,
+      s.Fecha,
+      c.ID_Cliente,
+      c.Nombre AS Nombre_Cliente,
+      z.Nombre_Zona,
+      ds.Potencia,
+      ds.Notas
+    FROM Sesiones s
+    INNER JOIN Clientes c ON s.ID_Cliente = c.ID_Cliente
+    LEFT JOIN DetallesSesiones ds ON s.ID_Sesion = ds.ID_Sesion
+    LEFT JOIN Zonas z ON ds.ID_Zona = z.ID_Zona
+    WHERE s.ID_Sesion = @ID_Sesion
+      AND s.ID_Centro = @ID_Centro
+  `);
 
+  return result.recordset;
+}
   async createSesion(data, idCentro) {
     const { ID_Cliente, Notas, Fecha } = data;
 
@@ -156,39 +203,37 @@ class SesionesService {
     return result.rowsAffected[0] > 0;
   }
 
-  async getDetalleSesion(idSesion, idCentro) {
-    const request = new sql.Request();
-    request.input('ID_Sesion', sql.Int, idSesion);
-    request.input('ID_Centro', sql.Int, idCentro);
+ async getDetalleSesion(idSesion, idCentro) {
+  const request = new sql.Request();
+  request.input('ID_Sesion', sql.Int, idSesion);
+  request.input('ID_Centro', sql.Int, idCentro);
 
-    const result = await request.query(`
-      SELECT 
-        s.ID_Sesion,
-        s.Fecha,
-        z.ID_Zona,
-        z.Nombre_Zona,
-        ds.Potencia,
-        ds.Notas
-      FROM Sesiones s
-      INNER JOIN DetallesSesiones ds ON s.ID_Sesion = ds.ID_Sesion
-      INNER JOIN Zonas z ON ds.ID_Zona = z.ID_Zona
-      WHERE s.ID_Sesion = @ID_Sesion
-        AND s.ID_Centro = @ID_Centro
-    `);
+  const result = await request.query(`
+    SELECT 
+      s.ID_Sesion,
+      s.Fecha,
+      z.Nombre_Zona,
+      ds.Potencia,
+      ds.Notas
+    FROM Sesiones s
+    INNER JOIN DetallesSesiones ds ON s.ID_Sesion = ds.ID_Sesion
+    INNER JOIN Zonas z ON ds.ID_Zona = z.ID_Zona
+    WHERE s.ID_Sesion = @ID_Sesion
+      AND s.ID_Centro = @ID_Centro
+  `);
 
-    if (result.recordset.length === 0) return null;
+  if (result.recordset.length === 0) return null;
 
-    return {
-      ID_Sesion: result.recordset[0].ID_Sesion,
-      Fecha: result.recordset[0].Fecha,
-      Zonas: result.recordset.map(row => ({
-        ID_Zona: row.ID_Zona,
-        Nombre_Zona: row.Nombre_Zona,
-        Potencia: row.Potencia,
-        Notas: row.Notas
-      }))
-    };
-  }
+  return {
+    ID_Sesion: result.recordset[0].ID_Sesion,
+    Fecha: formatDate(result.recordset[0].Fecha),
+    Zonas: result.recordset.map(row => ({
+      Nombre_Zona: row.Nombre_Zona,
+      Potencia: row.Potencia,
+      Notas: row.Notas
+    }))
+  };
+}
 }
 
 module.exports = new SesionesService();

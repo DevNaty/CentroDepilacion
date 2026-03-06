@@ -5,7 +5,7 @@ require('dotenv').config();
 
 const swaggerUi = require('swagger-ui-express');
 const swaggerSpec = require('./src/docs/swagger');
-
+const formatResponseDates = require('./src/middlewares/formatResponseDates');
 const errorMiddleware = require('./src/middlewares/errorMiddleware');
 const AppError = require('./src/appError');
 
@@ -36,7 +36,8 @@ app.use(express.json());
 
 // Swagger
 app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
-
+// Middleware para formatear fechas en las respuestas
+app.use(formatResponseDates);
 // DB
 connectDB();
 
