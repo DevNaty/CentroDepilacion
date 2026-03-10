@@ -46,6 +46,9 @@ class SesionesController {
   });
 
   createSesionCompleta = catchAsync(async (req, res, next) => {
+    
+    console.log("BODY RECIBIDO:", req.body);
+    console.log("USER:", req.user);
     const errores = validarCrearSesion(req.body);
     const idCentro = req.user.idCentro;
 
