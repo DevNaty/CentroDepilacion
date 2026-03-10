@@ -139,14 +139,14 @@ async getAllSesiones(idCentro) {
         SELECT SCOPE_IDENTITY() AS ID_Sesion;
       `);
 
-      const ID_Sesion = sesionResult.recordset[0].ID_Sesion;
+      const ID_Sesion = parseInt(sesionResult.recordset[0].ID_Sesion);
           console.log("Detalles:", Detalles);
           console.log("Es array?", Array.isArray(Detalles));
       for (const detalle of Detalles) {
         const detalleRequest = new sql.Request(transaction);
         detalleRequest.input('ID_Sesion', sql.Int, ID_Sesion);
         detalleRequest.input('ID_Zona', sql.Int, detalle.ID_Zona);
-        detalleRequest.input('Potencia', sql.VarChar, detalle.Potencia);
+        detalleRequest.input('Potencia', sql.VarChar, detalle.Potencia || null);
         detalleRequest.input('Notas', sql.VarChar, detalle.Notas || null);
 
         await detalleRequest.query(`
