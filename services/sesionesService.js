@@ -78,7 +78,7 @@ async getAllSesiones(idCentro) {
   return result.recordset;
 }
   async createSesion(data, idCentro) {
-    const { ID_Cliente, Notas, Fecha } = data;
+    const { ID_Cliente, Fecha } = data;
 
     const request = new sql.Request();
     request.input('ID_Cliente', sql.Int, ID_Cliente);
@@ -96,12 +96,12 @@ async getAllSesiones(idCentro) {
       return null;
     }
 
-    request.input('Notas', sql.VarChar, Notas || null);
+    
     request.input('Fecha', sql.Date, Fecha);
 
     const result = await request.query(`
-      INSERT INTO Sesiones (ID_Cliente, Notas, Fecha, ID_Centro)
-      VALUES (@ID_Cliente, @Notas, @Fecha, @ID_Centro);
+      INSERT INTO Sesiones (ID_Cliente, Fecha, ID_Centro)
+      VALUES (@ID_Cliente, @Fecha, @ID_Centro);
       SELECT SCOPE_IDENTITY() AS ID_Sesion;
     `);
 
@@ -132,7 +132,7 @@ async getAllSesiones(idCentro) {
       if (validacion.recordset.length === 0) {
         throw new Error('Cliente no pertenece al centro');
       }
-
+        
       const sesionResult = await sesionRequest.query(`
         INSERT INTO Sesiones (ID_Cliente, Fecha, ID_Centro)
         VALUES (@ID_Cliente, @Fecha, @ID_Centro);
@@ -145,12 +145,17 @@ async getAllSesiones(idCentro) {
           console.log("Es array?", Array.isArray(Detalles));
           
       for (const detalle of Detalles) {
+
+        console.log("DETALLE QUE SE VA A INSERTAR:", detalle);
+        console.log("QUERY DETALLES ejecutándose...");
+
         const detalleRequest = new sql.Request(transaction);
         detalleRequest.input('ID_Sesion', sql.Int, ID_Sesion);
         detalleRequest.input('ID_Zona', sql.Int, detalle.ID_Zona);
         detalleRequest.input('Potencia', sql.VarChar, detalle.Potencia || null);
         detalleRequest.input('Notas', sql.VarChar, detalle.Notas || null);
 
+        
         await detalleRequest.query(`
           INSERT INTO DetallesSesiones (ID_Sesion, ID_Zona, Potencia, Notas)
           VALUES (@ID_Sesion, @ID_Zona, @Potencia, @Notas);
@@ -162,6 +167,7 @@ async getAllSesiones(idCentro) {
       return { ID_Sesion, ID_Cliente, Fecha, Detalles };
 
     } catch (err) {
+      console.error("ERROR SQL:", err);
       await transaction.rollback();
       throw err;
     }
