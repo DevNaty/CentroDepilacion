@@ -174,28 +174,79 @@ async getAllSesiones(idCentro) {
   }
 
   async updateSesiones(id, data, idCentro) {
-    const { ID_Cliente, Notas, Fecha } = data;
 
-    const request = new sql.Request();
-    request.input('ID_Sesion', sql.Int, id);
-    request.input('ID_Centro', sql.Int, idCentro);
-    request.input('ID_Cliente', sql.Int, ID_Cliente);
-    request.input('Notas', sql.VarChar, Notas || null);
-    request.input('Fecha', sql.Date, Fecha);
+  const pool = await sql.connect();
+  const transaction = new sql.Transaction(pool);
 
-    const result = await request.query(`
+  const { ID_Cliente, Fecha, Detalles } = data;
+
+  await transaction.begin();
+
+  try {
+
+    // actualizar sesión
+    const sesionRequest = new sql.Request(transaction);
+
+    sesionRequest.input('ID_Sesion', sql.Int, id);
+    sesionRequest.input('ID_Centro', sql.Int, idCentro);
+    sesionRequest.input('ID_Cliente', sql.Int, ID_Cliente);
+    sesionRequest.input('Fecha', sql.Date, Fecha);
+
+    const result = await sesionRequest.query(`
       UPDATE Sesiones
       SET ID_Cliente = @ID_Cliente,
-          Notas = @Notas,
           Fecha = @Fecha
       WHERE ID_Sesion = @ID_Sesion
         AND ID_Centro = @ID_Centro
     `);
 
-    if (result.rowsAffected[0] === 0) return null;
+    if (result.rowsAffected[0] === 0) {
+      await transaction.rollback();
+      return null;
+    }
 
-    return { ID_Sesion: id, ...data };
+    // borrar detalles actuales
+    const deleteRequest = new sql.Request(transaction);
+
+    deleteRequest.input('ID_Sesion', sql.Int, id);
+
+    await deleteRequest.query(`
+      DELETE FROM DetallesSesiones
+      WHERE ID_Sesion = @ID_Sesion
+    `);
+
+    // insertar nuevos detalles
+    for (const detalle of Detalles) {
+
+      const detalleRequest = new sql.Request(transaction);
+
+      detalleRequest.input('ID_Sesion', sql.Int, id);
+      detalleRequest.input('ID_Zona', sql.Int, detalle.ID_Zona);
+      detalleRequest.input('Potencia', sql.VarChar, detalle.Potencia || null);
+      detalleRequest.input('Notas', sql.VarChar, detalle.Notas || null);
+
+      await detalleRequest.query(`
+        INSERT INTO DetallesSesiones (ID_Sesion, ID_Zona, Potencia, Notas)
+        VALUES (@ID_Sesion, @ID_Zona, @Potencia, @Notas)
+      `);
+    }
+
+    await transaction.commit();
+
+    return {
+      ID_Sesion: id,
+      ID_Cliente,
+      Fecha,
+      Detalles
+    };
+
+  } catch (err) {
+
+    await transaction.rollback();
+    throw err;
+
   }
+}
 
   async deleteSesiones(id, idCentro) {
     const request = new sql.Request();
