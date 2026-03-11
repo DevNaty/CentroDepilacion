@@ -27,7 +27,7 @@ class SesionesController {
     res.json(sesion);
   });
 
-  createSesion = catchAsync(async (req, res, next) => {
+  /*createSesion = catchAsync(async (req, res, next) => {
     const { ID_Cliente, Fecha } = req.body;
     const idCentro = req.user.idCentro;
 
@@ -44,7 +44,7 @@ class SesionesController {
 
     res.status(201).json(nuevaSesion);
   });
-
+*/
   createSesionCompleta = catchAsync(async (req, res, next) => {
     
     console.log("BODY RECIBIDO:", req.body);

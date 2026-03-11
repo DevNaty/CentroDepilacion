@@ -112,7 +112,7 @@ router.get('/:id', sesionesController.getSesionById);
  *             schema:
  *               $ref: '#/components/schemas/Sesion'
  */
-router.post('/', sesionesController.createSesion);
+//router.post('/', sesionesController.createSesion);
 
 /**
  * @swagger

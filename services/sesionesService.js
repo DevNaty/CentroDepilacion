@@ -77,7 +77,7 @@ async getAllSesiones(idCentro) {
 
   return result.recordset;
 }
-  async createSesion(data, idCentro) {
+  /*async createSesion(data, idCentro) {
     const { ID_Cliente, Fecha } = data;
 
     const request = new sql.Request();
@@ -107,7 +107,7 @@ async getAllSesiones(idCentro) {
 
     return { ID_Sesion: result.recordset[0].ID_Sesion, ...data };
   }
-
+*/
   async createSesionCompleta(data, idCentro) {
     const pool = await sql.connect();
     const transaction = new sql.Transaction(pool);
