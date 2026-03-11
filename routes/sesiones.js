@@ -144,7 +144,7 @@ router.get('/:id', sesionesController.getSesionById);
  *       201:
  *         description: Sesión completa creada
  */
-router.post('/completa', sesionesController.createSesionCompleta);
+router.post('/', sesionesController.createSesionCompleta);
 
 /**
  * @swagger
