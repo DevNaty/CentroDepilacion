@@ -35,7 +35,8 @@ async getAllSesiones(idCentro) {
         Fecha: formatDate(row.Fecha),
         Cliente: {
           ID_Cliente: row.ID_Cliente,
-          Nombre: row.Nombre_Cliente
+          Nombre: row.Nombre_Cliente,
+          Apellido: row.Apellido_Cliente
         },
         Zonas: []
       });
