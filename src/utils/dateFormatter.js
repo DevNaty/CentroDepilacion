@@ -3,10 +3,10 @@ const utc = require('dayjs/plugin/utc');
 
 dayjs.extend(utc);
 
-// Fecha → YYYY-MM-DD
+// Fecha → DD-MM-YYYY
 function formatDate(date) {
   if (!date) return null;
-  return dayjs(date).utc().format('YYYY-MM-DD');
+  return dayjs(date).utc().format('DD-MM-YYYY');
 }
 
 // Hora → HH:mm:ss (24hs)

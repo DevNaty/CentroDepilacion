@@ -38,6 +38,31 @@ class ZonasService {
       throw new Error(`Error al obtener zona con ID ${id}: ${err.message}`);
     }
   }
+  async getZonaUltimaPotencia(id, idCliente, idCentro) {
+    try {
+      const request = new sql.Request();
+      request.input('ID_Zona', sql.Int, id);
+      request.input('ID_Cliente', sql.Int, idCliente);
+      request.input('ID_Centro', sql.Int, idCentro);
+      
+
+      const result = await request.query(`
+      SELECT TOP 1
+        ds.Potencia
+      FROM DetallesSesiones ds
+      INNER JOIN Sesiones s ON ds.ID_Sesion = s.ID_Sesion
+      INNER JOIN Zonas z ON ds.ID_Zona = z.ID_Zona
+      WHERE ds.ID_Zona = @ID_Zona
+        AND s.ID_Cliente = @ID_Cliente
+        AND z.ID_Centro = @ID_Centro
+      ORDER BY s.Fecha DESC
+    `);
+
+      return result.recordset[0] || null;
+    } catch (err) {
+      throw new Error(`Error al obtener zona con ID ${id}: ${err.message}`);
+    }
+  }
 
   async createZona(zona, idCentro) {
   try {

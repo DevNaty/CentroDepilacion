@@ -27,6 +27,27 @@ getZonaById = catchAsync(async (req, res, next) => {
 
   res.json(zona);
 });
+
+getZonaUltimaPotencia = catchAsync(async (req, res, next) => {
+  const id = Number(req.query.idZona);
+  const idCliente = Number(req.query.idCliente);
+
+  if (!Number.isInteger(id) || !Number.isInteger(idCliente)) {
+    return next(new AppError('Parámetros inválidos', 400));
+  }
+
+  const ultimaPotencia = await zonasService.getZonaUltimaPotencia(
+    id,
+    idCliente
+  );
+
+  if (!ultimaPotencia) {
+    return res.json({ Potencia: null }); // 👈 importante
+  }
+
+  res.json(ultimaPotencia);
+});
+
 // POST /zonas
 createZona = catchAsync(async (req, res, next) => {
 

@@ -78,37 +78,7 @@ async getAllSesiones(idCentro) {
 
   return result.recordset;
 }
-  /*async createSesion(data, idCentro) {
-    const { ID_Cliente, Fecha } = data;
-
-    const request = new sql.Request();
-    request.input('ID_Cliente', sql.Int, ID_Cliente);
-    request.input('ID_Centro', sql.Int, idCentro);
-
-    // 🔒 Validar cliente pertenece al centro
-    const validacion = await request.query(`
-      SELECT ID_Cliente
-      FROM Clientes
-      WHERE ID_Cliente = @ID_Cliente
-        AND ID_Centro = @ID_Centro
-    `);
-
-    if (validacion.recordset.length === 0) {
-      return null;
-    }
-
-    
-    request.input('Fecha', sql.Date, Fecha);
-
-    const result = await request.query(`
-      INSERT INTO Sesiones (ID_Cliente, Fecha, ID_Centro)
-      VALUES (@ID_Cliente, @Fecha, @ID_Centro);
-      SELECT SCOPE_IDENTITY() AS ID_Sesion;
-    `);
-
-    return { ID_Sesion: result.recordset[0].ID_Sesion, ...data };
-  }
-*/
+ 
   async createSesionCompleta(data, idCentro) {
     const pool = await sql.connect();
     const transaction = new sql.Transaction(pool);

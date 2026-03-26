@@ -44,6 +44,7 @@ router.get('/', zonasController.getAllZonas);
  *         description: Zona no encontrada
  */
 router.get('/:id', zonasController.getZonaById);
+router.get('/:id/ultima-potencia/:idCliente', zonasController.getZonaUltimaPotencia);
 
 /**
  * @swagger
