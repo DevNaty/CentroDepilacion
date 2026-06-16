@@ -27,24 +27,7 @@ class SesionesController {
     res.json(sesion);
   });
 
-  /*createSesion = catchAsync(async (req, res, next) => {
-    const { ID_Cliente, Fecha } = req.body;
-    const idCentro = req.user.idCentro;
-
-    if (!ID_Cliente || !Number.isInteger(ID_Cliente)) {
-      return next(new AppError('ID_Cliente inválido', 400));
-    }
-
-    if (!Fecha || isNaN(Date.parse(Fecha))) {
-      return next(new AppError('Fecha inválida', 400));
-    }
-
-    const nuevaSesion =
-      await sesionesService.createSesion(req.body, idCentro);
-
-    res.status(201).json(nuevaSesion);
-  });
-*/
+  
   createSesionCompleta = catchAsync(async (req, res, next) => {
     
     console.log("BODY RECIBIDO:", req.body);

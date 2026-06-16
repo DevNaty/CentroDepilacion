@@ -1,4 +1,5 @@
 const { sql } = require('../config/db');
+const { timeToSqlDate } = require('../src/utils/dateFormatter');
 
 class ZonasService {
 
