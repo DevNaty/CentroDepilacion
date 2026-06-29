@@ -99,7 +99,7 @@ exports.recuperarPassword = async (req, res) => {
         // Por seguridad, respondemos igual aunque no exista
         if (result.recordset.length === 0) {
             return res.status(200).json({
-                message: "Si el correo existe, se enviarán instrucciones de recuperación"
+                message: "Se enviarán instrucciones de recuperación a la dirección de correo proporcionada si existe en nuestro sistema"
             });
         }
 
@@ -121,10 +121,8 @@ exports.recuperarPassword = async (req, res) => {
                     ResetTokenExpira = @ResetTokenExpira
                 WHERE ID_Usuario = @ID_Usuario
             `);
-
-        // TEMPORAL: devolver el token para pruebas
         res.status(200).json({
-    message: "Si el correo existe, recibirás instrucciones para recuperar tu contraseña"
+    message: "Se enviarán instrucciones de recuperación a la dirección de correo proporcionada si existe en nuestro sistema"
 });
 
     } catch (error) {
