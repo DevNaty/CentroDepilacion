@@ -21,11 +21,15 @@ const app = express();
 
 
 // 🔥 1️⃣ CORS PRIMERO
+app.use((req, res, next) => {
+  console.log(req.method, req.originalUrl);
+  next();
+});
 app.use(
   cors({
     origin: [
       "http://localhost:5173",
-       "http://localhost:5174",
+      "http://localhost:5174",
       "http://localhost:3000",
 
     ],
